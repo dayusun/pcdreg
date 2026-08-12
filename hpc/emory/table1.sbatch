@@ -22,6 +22,14 @@
 
 echo "### Starting cell $SLURM_ARRAY_TASK_ID at: $(date) ###"
 
+# `module` is a shell function from lmod and is not defined in a
+# non-interactive shell, so make sure it exists before using it.
+if ! command -v module >/dev/null 2>&1; then
+  for init in /apps/lmod/lmod/init/bash /usr/share/lmod/lmod/init/bash               /etc/profile.d/modules.sh /etc/profile.d/lmod.sh; do
+    [ -r "$init" ] && . "$init" && break
+  done
+fi
+
 module load R/4.4.0
 export R_LIBS_USER="${HOME}/R/pcdreg-4.4.0"
 
