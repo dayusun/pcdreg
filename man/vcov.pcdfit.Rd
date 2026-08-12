@@ -7,11 +7,11 @@
 \method{vcov}{pcdfit}(object, type = c("robust", "information", "profile"), ...)
 }
 \arguments{
-\item{object}{A fitted \code{\link[=panelrate]{panelrate()}} or \code{\link[=panelmean]{panelmean()}} model.}
+\item{object}{A fitted \code{\link[=pcdreg]{pcdreg()}} model.}
 
 \item{type}{Which estimator to return. \code{"robust"} is the sandwich estimator
 that does not rely on the Poisson assumption and is available for both
-models. \code{"information"} and \code{"profile"} apply to \code{\link[=panelrate]{panelrate()}} only:
+models. \code{"information"} and \code{"profile"} apply to \code{\link[=pcdreg]{pcdreg()}} only:
 the first is the efficient information estimator, valid under the Poisson
 assumption, and the second is the profile likelihood estimator, available
 only if the model was fitted with \code{profile = TRUE}.}
@@ -27,7 +27,7 @@ Covariance matrix of the estimated coefficients
 \examples{
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 sqrt(diag(vcov(fit)))
 sqrt(diag(vcov(fit, "information")))
 }

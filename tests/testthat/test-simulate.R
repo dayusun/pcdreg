@@ -55,7 +55,7 @@ test_that("the estimator recovers the truth on simulated data", {
   skip_on_cran()
   set.seed(4321)
   d <- r_panel_count(400, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-  fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+  fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
   se <- sqrt(diag(vcov(fit)))
   # Within three standard errors of the truth.
   expect_lt(abs(coef(fit)[["x1"]] - 1), 3 * se[["x1"]])

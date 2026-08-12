@@ -2,10 +2,10 @@
 
 * First release.
 
-* `panelrate()` fits the semiparametric proportional rate model for panel count
+* `pcdreg()` fits the semiparametric proportional rate model for panel count
   data with time-varying covariates, using the EM algorithm of Sun et al. (2024).
 
-* `panelmean()` fits the proportional means model by the estimating equation of
+* `pcdreg(model = "mean")` fits the proportional means model by the estimating equation of
   Hu, Sun and Wei (2003). It is the comparator used in the application of Sun et
   al. (2024), and is included so that the two model families can be compared on
   the same data. Note that the two are not reparametrisations of each other when
@@ -17,7 +17,7 @@
   Poisson assumption), `type = "information"` (the efficient information
   estimator), and `type = "profile"` (the Murphy--van der Vaart profile
   likelihood estimator, computed only when requested via
-  `panelrate(profile = TRUE)`). The means model has no likelihood, so only the
+  `pcdreg(profile = TRUE)`). The means model has no likelihood, so only the
   sandwich estimator is available for it.
 
 * Model specification uses `pcd()` on the left hand side of the formula,

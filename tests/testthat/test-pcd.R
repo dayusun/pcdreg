@@ -56,3 +56,30 @@ test_that("is.pcd discriminates", {
   expect_true(is.pcd(pcd(1, 1, 0)))
   expect_false(is.pcd(1:3))
 })
+
+test_that("the data plot draws for both orderings and subsets large studies", {
+  f <- tempfile(fileext = ".png")
+  on.exit(unlink(f), add = TRUE)
+  set.seed(1)
+  d <- r_panel_count(30)
+  y <- with(d, pcd(id, tstart, tstop, count))
+
+  for (by in c("followup", "events", "none")) {
+    grDevices::png(f)
+    expect_silent(plot(y, order_by = by))
+    grDevices::dev.off()
+    expect_gt(file.size(f), 1000)
+  }
+
+  # Large studies are thinned to keep the picture readable, and say so.
+  big <- with(r_panel_count(80), pcd(id, tstart, tstop, count))
+  grDevices::png(f)
+  expect_message(plot(big, max_subjects = 20), "20 of 80")
+  grDevices::dev.off()
+
+  # Character identifiers survive to the axis labels.
+  d$id <- paste0("s", d$id)
+  grDevices::png(f)
+  expect_silent(plot(with(d, pcd(id, tstart, tstop, count))))
+  grDevices::dev.off()
+})

@@ -1,0 +1,181 @@
+---
+title: "Where pcdreg fits among R packages for panel count data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Where pcdreg fits among R packages for panel count data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4.5)
+```
+
+```{r setup}
+library(pcdreg)
+```
+
+This article is about choosing a tool, so it says what `pcdreg` does that the
+alternatives do not, and equally what they do that it does not.
+
+# The landscape
+
+Three kinds of package meet recurrent event data in R, and they are not
+interchangeable.
+
+**Exactly observed event times.** If you know *when* each event happened,
+`reReg`, `survival` and the rest of the recurrent event literature apply, and
+none of what follows is relevant. Panel count data are the case where you know
+only how many events fell between visits.
+
+**`spef`**, by Chiou, Wang and Yan, is the established R package for panel count
+data. It offers a wide range of estimators through one function,
+`panelReg(formula, data, method = ...)`: augmented estimating equations that
+allow the observation process to be informative (`AEE`, `AEEX`), maximum
+pseudolikelihood and monotone spline likelihood methods (`MPL`, `MPLs`, `MLs`),
+the Sun--Wei and Hu--Sun--Wei estimating equations, and an accelerated mean
+model. Its response is `PanelSurv(ID, time, count)`, one row per examination.
+Every one of those methods targets the **mean** model. At the time of writing
+`spef` is archived on CRAN — since June 2026, for an undeliverable maintainer
+address rather than anything to do with the code — so it installs from the
+archive rather than from `install.packages()`.
+
+**`pcdreg`** fits the rate model and the mean model, with covariates that may
+vary over time, and estimates the covariance without leaning on a Poisson
+assumption.
+
+# What is actually different
+
+## The rate model
+
+This is the substantive difference. The means model
+\eqn{E[N(t)\mid X(t)] = \mu(t)\exp(\beta'X(t))} constrains the *cumulative*
+count; the rate model \eqn{E[dN(t)\mid X(t)] = \exp(\beta'X(t))d\Lambda(t)}
+constrains the *instantaneous* one. With covariates that move over time these
+are different models, not two parametrisations of one, and \eqn{\beta} means
+something different in each.
+
+Simulate from the rate model with a covariate that steps part way through
+follow-up, and fit both:
+
+```{r bothmodels}
+set.seed(1)
+d <- r_panel_count(300, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+
+rate <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+mean <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
+               model = "mean")
+
+round(cbind(truth = c(1, -1), rate = coef(rate), mean = coef(mean)), 3)
+```
+
+The rate model recovers the values used to generate the data. The means model
+does not, and it is not meant to: it is estimating a different quantity. If your
+scientific question is about the instantaneous risk — the analogue of a hazard
+ratio — then only the first column of estimates answers it, and a package
+offering mean models alone cannot produce it.
+
+The reverse holds too. If your question is about the cumulative burden by time
+\eqn{t}, the means model is the right one, and `pcdreg(model = "mean")` and
+`spef`'s `EE.HSWc` are the same estimator.
+
+## Monotonicity
+
+There is a second, more practical consequence. Nothing constrains a fitted mean
+function to increase, and with a fluctuating covariate it generally does not:
+
+```{r monotone}
+mu <- baseline(mean)$mean
+c(increasing = !is.unsorted(mu), decreases_at = sum(diff(mu) < 0))
+```
+
+A mean function that falls is not a numerical failure; it is what the estimator
+returns, and it makes the fitted model awkward to interpret and to predict from.
+The rate model has no such problem, because it constrains only
+\eqn{\exp(\beta'X(t))d\Lambda(t)} to be positive, so predicted means increase by
+construction:
+
+```{r predmono}
+pr <- predict(rate, d, type = "mean")
+all(vapply(split(pr$mean, pr$id), function(v) all(diff(v) >= 0), logical(1)))
+```
+
+Some `spef` methods address this from the other side, fitting \eqn{\mu} with
+monotone I-splines so the *baseline* increases by construction. That is a real
+solution to half the problem: it does not stop the fitted mean for a given
+subject from falling when their covariates fall.
+
+## Covariates between examinations
+
+The rate model's likelihood evaluates each subject's covariate trajectory at
+every pooled examination time inside their follow-up, including times at which
+*that* subject was not examined. A response of the form
+`PanelSurv(ID, time, count)`, with one row per examination, has nowhere to put a
+covariate value at a time when the subject was not seen. `pcd()`'s counting
+process form does:
+
+```{r layout}
+head(subset(d, id == 1), 4)
+```
+
+Row 3 here has `count = NA`: it records that a covariate changed at that time,
+not an examination. That is the information the rate model needs and the one row
+per examination layout cannot carry.
+
+## Variance without the Poisson assumption
+
+The rate model's likelihood is the one a Poisson process would give, which is a
+working device rather than a claim about the data. Recurrent event data are
+usually overdispersed, and then the standard errors that assume Poisson counts
+are far too small. `pcdreg` reports a robust sandwich by default and will show
+you the difference:
+
+```{r robust}
+set.seed(2)
+od <- r_panel_count(300, beta = c(1, -1), frailty = 1)  # gamma frailty
+odfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
+
+round(rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
+            information = sqrt(diag(vcov(odfit, "information")))), 4)
+```
+
+The simulations in the paper put the coverage of nominal 95% intervals built
+from the second row at 15--22%. Both are available here, and the honest one is
+the default.
+
+# Seeing the data first
+
+`pcdreg` also plots the observation pattern, which is worth a look before
+fitting anything:
+
+```{r dataplot, fig.alt = "Panel count data plot: one row per subject, follow-up drawn as a grey line, filled circles at examinations with area proportional to the event count and open circles where no events were recorded."}
+plot(with(d, pcd(id, tstart, tstop, count)), max_subjects = 40)
+```
+
+Two things visible here decide how the analysis will go. Whether examination
+times line up across subjects sets the size of the pooled grid and so the cost
+of fitting the rate model; and how ragged the right hand edge is tells you how
+much of the tail of the baseline rests on a handful of subjects.
+
+# Which to use
+
+| If you need | Use |
+|---|---|
+| the rate model, or covariates that change between visits | `pcdreg` |
+| standard errors that survive overdispersion | `pcdreg` |
+| the mean model with the Hu--Sun--Wei estimating equation | either |
+| informative observation or censoring times | `spef` (`AEE`, `AEEX`) |
+| a monotone spline baseline mean | `spef` (`MPLs`, `MLs`) |
+| an accelerated mean model, or the other mean-model estimators | `spef` |
+| exactly observed event times | not panel count data; see `reReg` |
+
+`pcdreg` is deliberately narrow. It implements two models carefully, with the
+covariance estimation worked out and tested, rather than many models at once.
+Where `spef` has an estimator you need, use it.
+
+# Reference
+
+Sun, D., Guo, Y., Li, Y., Tu, W. and Sun, J. (2024). A robust approach for
+regression analysis of panel count data. *Bernoulli* **30**(4), 3251--3275.
+[doi:10.3150/23-BEJ1713](https://doi.org/10.3150/23-BEJ1713)

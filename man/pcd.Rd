@@ -28,7 +28,7 @@ identifier labels in the \code{"labels"} attribute. Missing counts are stored as
 \code{na.action} handling applies to the covariates alone.
 }
 \description{
-Creates the response object used on the left hand side of a \code{\link[=panelrate]{panelrate()}}
+Creates the response object used on the left hand side of a \code{\link[=pcdreg]{pcdreg()}}
 formula, in the same spirit as \code{\link[survival:Surv]{survival::Surv()}}.
 }
 \details{
@@ -108,11 +108,11 @@ pcd(
 # meet it.
 set.seed(1)
 d <- r_panel_count(40)
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 c(subjects = fit$n, examinations = fit$nexam, events = fit$nevent)
 
 }
 \seealso{
-\code{\link[=panelrate]{panelrate()}}, \code{\link[=panelmean]{panelmean()}}, and
+\code{\link[=pcdreg]{pcdreg()}} and
 \code{vignette("data-preparation")} for converting data into this shape.
 }

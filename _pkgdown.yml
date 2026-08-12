@@ -22,8 +22,7 @@ reference:
     The two models. They take the same data and the same formula, so a model can
     be refitted under the other by changing the function name alone.
   contents:
-  - panelrate
-  - panelmean
+  - pcdreg
 
 - title: Specifying the data
   desc: >
@@ -32,6 +31,7 @@ reference:
   contents:
   - pcd
   - is.pcd
+  - plot.pcd
 
 - title: Inspecting a fit
   desc: >
@@ -41,13 +41,12 @@ reference:
   - vcov.pcdfit
   - summary.pcdfit
   - baseline
-  - predict.panelrate
+  - predict.pcdfit
   - plot.pcdfit
 
 - title: Tuning
   contents:
-  - panelrate_control
-  - panelmean_control
+  - pcdreg_control
 
 - title: Simulation
   desc: >
@@ -66,3 +65,4 @@ articles:
   contents:
   - pcdreg
   - data-preparation
+  - comparison

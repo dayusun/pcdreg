@@ -143,7 +143,7 @@ ref_loglik <- function(d, beta, lambda) {
   sum(ifelse(d$dN > 0, d$dN * log(denom), 0) - denom - lgamma(d$dN + 1))
 }
 
-# Build the prepared arrays the way panelrate() does, for use by the reference.
+# Build the prepared arrays the way pcdreg() does, for use by the reference.
 prep <- function(data, formula = pcd(id, tstart, tstop, count) ~ x1 + x2) {
   mf <- stats::model.frame(formula, data)
   X <- stats::model.matrix(attr(mf, "terms"), mf)

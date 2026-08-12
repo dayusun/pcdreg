@@ -7,7 +7,7 @@
 \method{plot}{pcdfit}(x, xlab = "Time", ylab = NULL, type = "s", ...)
 }
 \arguments{
-\item{x}{A fitted \code{\link[=panelrate]{panelrate()}} or \code{\link[=panelmean]{panelmean()}} model.}
+\item{x}{A fitted \code{\link[=pcdreg]{pcdreg()}} model.}
 
 \item{xlab, ylab, type}{Passed to \code{\link[graphics:plot.default]{graphics::plot()}}, with defaults suited to a
 step function and to whichever baseline the model estimates.}
@@ -23,5 +23,5 @@ Plot the estimated baseline function
 \examples{
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-plot(panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, d))
+plot(pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, d))
 }

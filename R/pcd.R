@@ -1,6 +1,6 @@
 #' Describe panel count observations
 #'
-#' Creates the response object used on the left hand side of a [panelrate()]
+#' Creates the response object used on the left hand side of a [pcdreg()]
 #' formula, in the same spirit as [survival::Surv()].
 #'
 #' @param id Subject identifier. May be numeric, character or a factor; rows
@@ -90,10 +90,10 @@
 #' # meet it.
 #' set.seed(1)
 #' d <- r_panel_count(40)
-#' fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+#' fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' c(subjects = fit$n, examinations = fit$nexam, events = fit$nevent)
 #'
-#' @seealso [panelrate()], [panelmean()], and
+#' @seealso [pcdreg()] and
 #'   `vignette("data-preparation")` for converting data into this shape.
 #' @export
 pcd <- function(id, time, time2, count) {
@@ -216,6 +216,93 @@ is.na.pcd <- function(x) {
 
 #' @export
 as.character.pcd <- function(x, ...) format(x, ...)
+
+#' Plot panel count data
+#'
+#' Draws the observation pattern: one row per subject, their follow-up as a
+#' line, and a circle at each examination with area proportional to the number
+#' of events recorded there.
+#'
+#' @param x A [pcd()] object.
+#' @param order_by How to order subjects up the vertical axis. `"followup"`
+#'   sorts by the time of the last examination, which makes the censoring
+#'   pattern legible; `"events"` sorts by the total number of events; `"none"`
+#'   keeps the order of the identifiers.
+#' @param max_subjects Draw at most this many subjects, taken as an evenly
+#'   spaced sample so the picture stays readable for large studies. A message
+#'   reports how many were shown.
+#' @param cex_max Radius scaling for the largest count.
+#' @param xlab,ylab,col,... Passed to the underlying plotting calls.
+#'
+#' @return `x`, invisibly.
+#'
+#' @details
+#' What the picture is for: panel count data have two features that decide which
+#' model and which estimator make sense, and both are visible here. Whether
+#' examination times line up across subjects determines the size of the pooled
+#' grid and so the cost of fitting the rate model, and whether follow-up ends at
+#' widely differing times determines how much of the baseline is estimated from
+#' few subjects.
+#'
+#' Open circles mark examinations where no events were recorded, so a subject
+#' with a long line of open circles is contributing information about the
+#' baseline without contributing events.
+#'
+#' @examples
+#' set.seed(1)
+#' d <- r_panel_count(40)
+#' plot(with(d, pcd(id, tstart, tstop, count)))
+#'
+#' @seealso [plot.pcdfit()] for the fitted baseline function.
+#' @export
+plot.pcd <- function(x, order_by = c("followup", "events", "none"),
+                     max_subjects = 60L, cex_max = 2.5,
+                     xlab = "Time", ylab = "Subject", col = "#2B4C7E", ...) {
+  order_by <- match.arg(order_by)
+  m <- unclass(x)
+  labels <- attr(x, "labels")
+
+  exam <- m[, "exam"] == 1
+  id <- m[, "id"]
+  ids <- sort(unique(id))
+
+  last <- vapply(ids, function(i) max(m[id == i & exam, "tstop"]), numeric(1))
+  total <- vapply(ids, function(i) sum(m[id == i & exam, "count"]), numeric(1))
+  ord <- switch(order_by,
+                followup = order(last),
+                events = order(total),
+                none = seq_along(ids))
+  ids <- ids[ord]
+  last <- last[ord]
+
+  if (length(ids) > max_subjects) {
+    keep <- unique(round(seq(1, length(ids), length.out = max_subjects)))
+    message("Showing ", length(keep), " of ", length(ids), " subjects.")
+    ids <- ids[keep]
+    last <- last[keep]
+  }
+  pos <- seq_along(ids)
+
+  counts <- m[exam, "count"]
+  scale <- if (max(counts) > 0) cex_max / sqrt(max(counts)) else cex_max
+
+  graphics::plot(range(c(0, m[, "tstop"])), c(0.5, length(ids) + 0.5),
+                 type = "n", xlab = xlab, ylab = ylab, yaxt = "n", ...)
+  graphics::segments(0, pos, last, pos, col = "grey75")
+  for (k in seq_along(ids)) {
+    at <- id == ids[k] & exam
+    cnt <- m[at, "count"]
+    graphics::points(m[at, "tstop"], rep(pos[k], sum(at)),
+                     cex = ifelse(cnt > 0, scale * sqrt(cnt), 0.5),
+                     pch = ifelse(cnt > 0, 19, 1),
+                     col = ifelse(cnt > 0, col, "grey55"))
+  }
+  ticks <- unique(round(seq(1, length(ids), length.out = min(6, length(ids)))))
+  shown <- if (is.null(labels)) ids[ticks] else labels[ids[ticks]]
+  graphics::axis(2, at = pos[ticks], labels = shown, las = 1,
+                 cex.axis = 0.8, tick = FALSE)
+  invisible(x)
+}
 
 #' Test for a panel count response
 #'

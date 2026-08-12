@@ -2,23 +2,25 @@
 % Please edit documentation in R/pcdreg-package.R
 \docType{package}
 \name{pcdreg-package}
-\alias{pcdreg}
 \alias{pcdreg-package}
 \title{pcdreg: Semiparametric Regression for Panel Count Data}
 \description{
 Panel count data arise when a recurrent event process is observed only at
 intermittent examination times, so that the number of events between
 consecutive examinations is known but the event times themselves are not.
-\code{panelrate()} fits the semiparametric proportional rate model
-\deqn{E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t)}
-to such data, allowing the covariates \eqn{X(t)} to vary over time.
+\code{\link[=pcdreg]{pcdreg()}} fits either of the two standard semiparametric models to such
+data, allowing the covariates \eqn{X(t)} to vary over time:
+\deqn{\textrm{rate:} \quad E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t)}
+\deqn{\textrm{mean:} \quad E[N(t) \mid X(t)] = \mu(t) \exp(\beta' X(t))}
 
-Estimation treats the baseline cumulative rate \eqn{\Lambda} nonparametrically
-and maximises the likelihood that a nonhomogeneous Poisson process would
-imply, using an EM algorithm that augments the observed counts with latent
-per-examination-time Poisson counts. The Poisson assumption is a working
-device only: the estimator stays consistent and asymptotically normal when it
-fails, and the default covariance estimator is robust to that failure.
+The rate model treats the baseline cumulative rate \eqn{\Lambda}
+nonparametrically and maximises the likelihood that a nonhomogeneous Poisson
+process would imply, using an EM algorithm that augments the observed counts
+with latent per-examination-time Poisson counts. The Poisson assumption is a
+working device only: the estimator stays consistent and asymptotically normal
+when it fails, and the default covariance estimator is robust to that
+failure. The means model is fitted by an estimating equation and is provided
+as the comparator.
 }
 \references{
 Sun, D., Guo, Y., Li, Y., Tu, W. and Sun, J. (2024).

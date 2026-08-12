@@ -26,7 +26,7 @@ claims tallied at renewal all have this shape.
 
 Write $N_i(t)$ for the number of events subject $i$ has experienced by time $t$,
 observed at times $T_{i1} < \dots < T_{iJ_i}$, and $\Delta N_{ij}$ for the count
-in $(T_{i,j-1}, T_{ij}]$. `panelrate()` fits the proportional rate model
+in $(T_{i,j-1}, T_{ij}]$. `pcdreg()` fits the proportional rate model
 
 $$E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t),$$
 
@@ -43,7 +43,7 @@ automatically, and $\exp(\beta'X(t))$ carries the same instantaneous
 relative-risk reading that a hazard ratio has in survival analysis.
 
 The means model is nonetheless the established alternative, and the package
-fits it too, with `panelmean()`. The last section compares the two.
+fits it too, with `pcdreg(model = "mean")`. The last section compares the two.
 
 ## Getting data into shape
 
@@ -88,7 +88,7 @@ interval, which is exactly the information the rate model can use and the means
 model cannot.
 
 Within a subject the intervals must be contiguous, start at zero, and end at an
-examination. `panelrate()` checks all of this and says which subject is at fault
+examination. `pcdreg()` checks all of this and says which subject is at fault
 when it fails.
 
 ### Converting data held in the older layout
@@ -101,7 +101,7 @@ row carries no information that the count on the examination row does not:
 ```{r convert, eval = FALSE}
 new <- old
 new$count[old$event == 0] <- NA
-panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
+pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
 ```
 
 ## Fitting
@@ -109,12 +109,12 @@ panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
 ```{r fit}
 set.seed(1)
 d <- r_panel_count(200, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
 ```
 
 There is no intercept: a constant in $X$ would be indistinguishable from a
-rescaling of $\Lambda$, so `panelrate()` drops it and reports the baseline
+rescaling of $\Lambda$, so `pcdreg()` drops it and reports the baseline
 separately.
 
 Fitting maximises the likelihood implied by a nonhomogeneous Poisson process,
@@ -159,7 +159,7 @@ Vaart. It is included for comparison with the literature, and because it is
 expensive it is computed only on request:
 
 ```{r profile}
-pfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
+pfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
                   profile = TRUE)
 rbind(information = sqrt(diag(vcov(pfit, "information"))),
       profile     = sqrt(diag(vcov(pfit, "profile"))))
@@ -182,7 +182,7 @@ frailty leaves the rate model intact but destroys the Poisson structure.
 ```{r overdispersed}
 set.seed(2)
 od <- r_panel_count(200, beta = c(1, -1), frailty = 1)
-odfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
+odfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
 rbind(robust = sqrt(diag(vcov(odfit, "robust"))),
       information = sqrt(diag(vcov(odfit, "information"))))
 ```
@@ -221,7 +221,7 @@ follow-up, which is the structural advantage of the rate model.
 
 ## The means model
 
-`panelmean()` fits the other classical model for these data,
+`pcdreg(model = "mean")` fits the other classical model for these data,
 
 $$E[N(t) \mid X(t)] = \mu(t)\exp(\beta'X(t)),$$
 
@@ -230,7 +230,7 @@ in the application of the paper, and it is cheap: only the examination times
 enter, so none of the grid expansion the rate model needs is required.
 
 ```{r meanmodel}
-mfit <- panelmean(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+mfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d, model = "mean")
 summary(mfit)
 ```
 
@@ -247,8 +247,8 @@ First, these numbers are not two estimates of one quantity. With time-varying
 covariates the models are not reparametrisations of each other: $\beta$ acts on
 the instantaneous rate in one and on the cumulative mean in the other, so they
 answer different questions and there is no reason for them to agree. The data
-here were generated from the rate model, which is why `panelrate()` recovers the
-values used to simulate them and `panelmean()` does not.
+here were generated from the rate model, which is why `pcdreg()` recovers the
+values used to simulate them and `pcdreg(model = "mean")` does not.
 
 Second, nothing constrains the fitted $\hat\mu$ to increase:
 
@@ -261,14 +261,14 @@ That is the difficulty with the means model this package's rate model is meant
 to avoid, and it is visible here on ordinary simulated data rather than only in
 principle. A mean function that falls is not a numerical failure; it is what the
 estimator returns when covariate values move up and down, and it is why
-predicted means from `panelmean()` can decrease while those from `panelrate()`
+predicted means from `pcdreg(model = "mean")` can decrease while those from `pcdreg()`
 cannot.
 
 ## Computation
 
 The EM algorithm converges linearly and, on this problem, slowly: plain EM can
 still be moving in the fifth decimal place after tens of thousands of passes.
-`panelrate()` therefore extrapolates the iterations using the SQUAREM scheme of
+`pcdreg()` therefore extrapolates the iterations using the SQUAREM scheme of
 Varadhan and Roland, keeping an extrapolated point only when a stabilising EM
 pass from it does at least as well on the observed data log likelihood. The
 fixed point is unchanged; only the number of passes needed to reach it falls,
@@ -279,7 +279,7 @@ c(iterations = fit$iterations, EM_passes = fit$passes,
   converged = fit$converged)
 ```
 
-Set `accelerate = FALSE` in `panelrate_control()` to recover plain EM.
+Set `accelerate = FALSE` in `pcdreg_control()` to recover plain EM.
 
 The dominant cost is the size of the pooled grid of distinct examination times,
 because the covariate trajectory of every subject has to be evaluated at every

@@ -3,10 +3,10 @@ dat <- local({
   r_panel_count(35, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 })
 
-ctrl <- panelrate_control(reltol = 1e-10, maxit = 20000L)
+ctrl <- pcdreg_control(reltol = 1e-10, maxit = 20000L)
 
 fit_of <- function(d) {
-  panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
+  pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
             control = ctrl)
 }
 

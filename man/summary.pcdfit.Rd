@@ -7,7 +7,7 @@
 \method{summary}{pcdfit}(object, type = c("robust", "information", "profile"), ...)
 }
 \arguments{
-\item{object}{A fitted \code{\link[=panelrate]{panelrate()}} or \code{\link[=panelmean]{panelmean()}} model.}
+\item{object}{A fitted \code{\link[=pcdreg]{pcdreg()}} model.}
 
 \item{type}{Which covariance estimator to base the standard errors on. See
 \code{\link[=vcov.pcdfit]{vcov.pcdfit()}}.}
@@ -25,7 +25,7 @@ Summarise a fitted panel count model
 \examples{
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
 summary(fit, "information")
 }

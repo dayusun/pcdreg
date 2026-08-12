@@ -25,10 +25,10 @@ test_that("the compiled EM matches an independent pure R implementation", {
 
 test_that("acceleration changes the path but not the destination", {
   d <- make_data(40)
-  fast <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
-                    control = panelrate_control(reltol = 1e-10, maxit = 5000))
-  slow <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
-                    control = panelrate_control(reltol = 1e-10, maxit = 100000,
+  fast <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
+                    control = pcdreg_control(reltol = 1e-10, maxit = 5000))
+  slow <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
+                    control = pcdreg_control(reltol = 1e-10, maxit = 100000,
                                                 accelerate = FALSE))
   expect_true(fast$converged)
   expect_equal(coef(fast), coef(slow), tolerance = 1e-5)
@@ -68,7 +68,7 @@ test_that("the solution satisfies the score and fixed point equations", {
 
 test_that("a model with no covariates estimates the baseline alone", {
   d <- make_data(30)
-  fit <- panelrate(pcd(id, tstart, tstop, count) ~ 1, data = d)
+  fit <- pcdreg(pcd(id, tstart, tstop, count) ~ 1, data = d)
   expect_length(coef(fit), 0L)
   expect_true(fit$converged)
   expect_true(all(fit$baseline$jump >= 0))
@@ -80,7 +80,7 @@ test_that("a model with no covariates estimates the baseline alone", {
 })
 
 test_that("the baseline is non-decreasing and the log likelihood is finite", {
-  fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
+  fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2,
                    data = make_data(40))
   expect_true(all(diff(fit$baseline$cumrate) >= 0))
   expect_true(all(fit$baseline$jump >= 0))
@@ -90,13 +90,13 @@ test_that("the baseline is non-decreasing and the log likelihood is finite", {
 
 test_that("starting values do not change the solution", {
   d <- make_data(30)
-  a <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
-                 control = panelrate_control(reltol = 1e-10))
-  b <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
+  a <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
+                 control = pcdreg_control(reltol = 1e-10))
+  b <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
                  init = c(0.8, -0.7),
-                 control = panelrate_control(reltol = 1e-10))
+                 control = pcdreg_control(reltol = 1e-10))
   expect_equal(coef(a), coef(b), tolerance = 1e-5)
-  expect_error(panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
+  expect_error(pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2,
                          data = d, init = 1), "has length 1")
 })
 
@@ -107,20 +107,20 @@ test_that("collinear covariates raise an error rather than an approximation", {
   d <- make_data(30)
   d$copy <- d$x1
   expect_error(
-    panelrate(pcd(id, tstart, tstop, count) ~ x1 + copy, data = d),
+    pcdreg(pcd(id, tstart, tstop, count) ~ x1 + copy, data = d),
     "singular"
   )
   expect_error(
-    panelmean(pcd(id, tstart, tstop, count) ~ x1 + copy, data = d),
+    pcdreg(pcd(id, tstart, tstop, count) ~ x1 + copy, data = d, model = "mean"),
     "singular"
   )
 })
 
 test_that("failure to converge is reported rather than hidden", {
   expect_warning(
-    panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
+    pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2,
               data = make_data(30),
-              control = panelrate_control(maxit = 2L, reltol = 1e-12)),
+              control = pcdreg_control(maxit = 2L, reltol = 1e-12)),
     "did not converge"
   )
 })

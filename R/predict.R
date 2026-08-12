@@ -57,7 +57,7 @@ pcd_newdata <- function(object, newdata) {
 
 #' Predictions from a panel count model
 #'
-#' @param object A fitted [panelrate()] or [panelmean()] model.
+#' @param object A fitted [pcdreg()] model.
 #' @param newdata Data to predict for. Defaults to the data the model was fitted
 #'   to. For `type = "mean"` it must also contain the variables in the
 #'   [pcd()] response, since the prediction follows each subject's
@@ -65,8 +65,8 @@ pcd_newdata <- function(object, newdata) {
 #' @param type `"lp"` returns the linear predictor \eqn{\beta' X(t)} for each
 #'   row. `"mean"` returns the predicted mean number of events at every fitted
 #'   examination time within each subject's follow-up:
-#'   \eqn{\int_0^t \exp(\beta' X(s)) \, d\hat\Lambda(s)} for [panelrate()], and
-#'   \eqn{\hat\mu(t) \exp(\beta' X(t))} for [panelmean()].
+#'   \eqn{\int_0^t \exp(\beta' X(s)) \, d\hat\Lambda(s)} for [pcdreg()], and
+#'   \eqn{\hat\mu(t) \exp(\beta' X(t))} for [pcdreg()].
 #' @param ... Ignored.
 #'
 #' @return For `type = "lp"`, a numeric vector with one element per row of
@@ -83,24 +83,19 @@ pcd_newdata <- function(object, newdata) {
 #' @examples
 #' set.seed(1)
 #' d <- r_panel_count(60, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-#' fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+#' fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' head(predict(fit))
 #' head(predict(fit, type = "mean"))
 #' @export
-predict.panelrate <- function(object, newdata, type = c("lp", "mean"), ...) {
+predict.pcdfit <- function(object, newdata, type = c("lp", "mean"), ...) {
   type <- match.arg(type)
   newdata <- pcd_newdata(object, if (missing(newdata)) NULL else newdata)
   if (type == "lp") return(pcd_linear_predictor(object, newdata))
-  jump <- object$baseline$jump
-  pcd_trajectory(object, newdata, function(lp, k) cumsum(exp(lp) * jump[k]))
-}
-
-#' @rdname predict.panelrate
-#' @export
-predict.panelmean <- function(object, newdata, type = c("lp", "mean"), ...) {
-  type <- match.arg(type)
-  newdata <- pcd_newdata(object, if (missing(newdata)) NULL else newdata)
-  if (type == "lp") return(pcd_linear_predictor(object, newdata))
-  mu <- object$baseline$mean
-  pcd_trajectory(object, newdata, function(lp, k) mu[k] * exp(lp))
+  if (pcd_is_mean(object)) {
+    mu <- object$baseline$mean
+    pcd_trajectory(object, newdata, function(lp, k) mu[k] * exp(lp))
+  } else {
+    jump <- object$baseline$jump
+    pcd_trajectory(object, newdata, function(lp, k) cumsum(exp(lp) * jump[k]))
+  }
 }

@@ -2,7 +2,7 @@ dat <- local({
   set.seed(3030)
   r_panel_count(40, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 })
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = dat)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = dat)
 
 test_that("the extractor methods agree with the fit", {
   expect_named(coef(fit), c("x1", "x2"))
@@ -75,20 +75,20 @@ test_that("plot draws without error", {
 test_that("factors and interactions are handled and no intercept is fitted", {
   d <- dat
   d$g <- factor(ifelse(d$id %% 2 == 0, "even", "odd"))
-  f <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + g, data = d)
+  f <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + g, data = d)
   expect_false("(Intercept)" %in% names(coef(f)))
   expect_named(coef(f), c("x1", "godd"))
 
-  fi <- panelrate(pcd(id, tstart, tstop, count) ~ x1 * x2, data = d)
+  fi <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 * x2, data = d)
   expect_named(coef(fi), c("x1", "x2", "x1:x2"))
 })
 
 test_that("subset is honoured", {
-  half <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = dat,
+  half <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = dat,
                     subset = id <= 20)
   expect_equal(nobs(half), 20L)
 })
 
 test_that("a non pcd response is refused", {
-  expect_error(panelrate(count ~ x1, data = dat), "pcd")
+  expect_error(pcdreg(count ~ x1, data = dat), "pcd")
 })
