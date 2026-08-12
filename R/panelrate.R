@@ -52,8 +52,8 @@ panelrate_control <- function(maxit = 2000L, reltol = 1e-7,
 #' function with a jump at each observed examination time. Covariates may vary
 #' over time.
 #'
-#' @param formula A formula whose left hand side is a [PanelCount()] object,
-#'   for example `PanelCount(id, tstart, tstop, count) ~ x1 + x2`. No intercept
+#' @param formula A formula whose left hand side is a [pcd()] object,
+#'   for example `pcd(id, tstart, tstop, count) ~ x1 + x2`. No intercept
 #'   is fitted: it is absorbed into the baseline \eqn{\Lambda}.
 #' @param data A data frame containing the variables in `formula`.
 #' @param subset,na.action Handled as in [stats::lm()]. Note that missing
@@ -66,15 +66,15 @@ panelrate_control <- function(maxit = 2000L, reltol = 1e-7,
 #' @param init Optional starting values for the coefficients.
 #'
 #' @section Specifying the model:
-#' The left hand side is always a [PanelCount()] object, which carries the
+#' The left hand side is always a [pcd()] object, which carries the
 #' subject, the interval and the event count. The right hand side is an ordinary
 #' model formula, so interactions, transformations, factors and `.` all behave
 #' as usual:
 #'
 #' ```
-#' PanelCount(id, tstart, tstop, count) ~ x1 + x2
-#' PanelCount(id, tstart, tstop, count) ~ x1 * x2 + log(x3)
-#' PanelCount(id, time, count)          ~ .
+#' pcd(id, tstart, tstop, count) ~ x1 + x2
+#' pcd(id, tstart, tstop, count) ~ x1 * x2 + log(x3)
+#' pcd(id, time, count)          ~ .
 #' ```
 #'
 #' The dot expands to every column that is not part of the response, so the
@@ -128,11 +128,11 @@ panelrate_control <- function(maxit = 2000L, reltol = 1e-7,
 #' @examples
 #' set.seed(1)
 #' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-#' fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+#' fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' fit
 #' summary(fit)
 #'
-#' @seealso [PanelCount()], [panelmean()], [vcov.pcdfit()], [r_panel_count()]
+#' @seealso [pcd()], [panelmean()], [vcov.pcdfit()], [r_panel_count()]
 #' @export
 panelrate <- function(formula, data, subset, na.action,
                       control = panelrate_control(), profile = FALSE,

@@ -17,7 +17,7 @@ test_that("Omega and S match the pure R versions of the paper's formulas", {
 })
 
 test_that("Omega and S have the structure the theory requires", {
-  fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2,
+  fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
                    data = make_data(50),
                    control = panelrate_control(reltol = 1e-10))
 
@@ -48,7 +48,7 @@ test_that("Omega and S have the structure the theory requires", {
 })
 
 test_that("the reported covariances are the formulas in Section 4", {
-  fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2,
+  fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
                    data = make_data(40))
   n <- fit$n
   expect_equal(vcov(fit, "robust"),
@@ -61,7 +61,7 @@ test_that("the reported covariances are the formulas in Section 4", {
 })
 
 test_that("the profile covariance is only available on request", {
-  fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2,
+  fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
                    data = make_data(30))
   expect_error(vcov(fit, "profile"), "profile = TRUE")
 })
@@ -70,7 +70,7 @@ test_that("the information and profile estimators agree under Poisson data", {
   skip_on_cran()
   # Theorem 3 of the paper says both estimate the same matrix S; the simulation
   # study reports them as nearly identical replication by replication.
-  fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2,
+  fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
                    data = make_data(120, seed = 7), profile = TRUE,
                    control = panelrate_control(reltol = 1e-10))
   info <- sqrt(diag(vcov(fit, "information")))
@@ -83,7 +83,7 @@ test_that("overdispersion separates the robust estimator from the others", {
   # With a gamma frailty the rate model still holds but the counts are far from
   # Poisson, so the information estimator should understate the variability
   # while the robust one should not.
-  fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2,
+  fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
                    data = make_data(150, seed = 11, frailty = 1),
                    control = panelrate_control(reltol = 1e-9))
   robust <- sqrt(diag(vcov(fit, "robust")))
@@ -92,7 +92,7 @@ test_that("overdispersion separates the robust estimator from the others", {
 })
 
 test_that("confidence intervals line up with the chosen covariance", {
-  fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2,
+  fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
                    data = make_data(40))
   ci <- confint(fit)
   se <- sqrt(diag(vcov(fit, "robust")))

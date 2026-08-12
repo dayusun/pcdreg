@@ -16,8 +16,8 @@ pcd_trajectory <- function(object, newdata, combine) {
   mf <- stats::model.frame(object$terms, newdata, na.action = stats::na.pass,
                            xlev = object$xlevels)
   y <- stats::model.response(mf)
-  if (!is.PanelCount(y)) {
-    stop("`newdata` must contain the `PanelCount()` variables for ",
+  if (!is.pcd(y)) {
+    stop("`newdata` must contain the `pcd()` variables for ",
          "`type = \"mean\"`.", call. = FALSE)
   }
   X <- stats::model.matrix(object$terms, mf, contrasts.arg = object$contrasts)
@@ -60,7 +60,7 @@ pcd_newdata <- function(object, newdata) {
 #' @param object A fitted [panelrate()] or [panelmean()] model.
 #' @param newdata Data to predict for. Defaults to the data the model was fitted
 #'   to. For `type = "mean"` it must also contain the variables in the
-#'   [PanelCount()] response, since the prediction follows each subject's
+#'   [pcd()] response, since the prediction follows each subject's
 #'   covariate trajectory; the counts themselves are ignored.
 #' @param type `"lp"` returns the linear predictor \eqn{\beta' X(t)} for each
 #'   row. `"mean"` returns the predicted mean number of events at every fitted
@@ -83,7 +83,7 @@ pcd_newdata <- function(object, newdata) {
 #' @examples
 #' set.seed(1)
 #' d <- r_panel_count(60, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-#' fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+#' fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' head(predict(fit))
 #' head(predict(fit, type = "mean"))
 #' @export

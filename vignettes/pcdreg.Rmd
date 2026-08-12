@@ -47,7 +47,7 @@ fits it too, with `panelmean()`. The last section compares the two.
 
 ## Getting data into shape
 
-The response is built by `PanelCount()`, which plays the role `Surv()` plays in
+The response is built by `pcd()`, which plays the role `Surv()` plays in
 survival analysis and, like it, has two forms.
 
 When covariates do not change over time, one row per examination is enough:
@@ -59,7 +59,7 @@ visits <- data.frame(
   count = c(2, 0, 3, 1, 4),
   dose  = c(10, 10, 10, 25, 25)
 )
-PanelCount(visits$id, visits$time, visits$count)
+pcd(visits$id, visits$time, visits$count)
 ```
 
 Interval starts are filled in from the previous examination of the same subject,
@@ -79,7 +79,7 @@ cp <- data.frame(
   count  = c(2, NA, 0, 3),
   dose   = c(10, 10, 25, 25)
 )
-PanelCount(cp$id, cp$tstart, cp$tstop, cp$count)
+pcd(cp$id, cp$tstart, cp$tstop, cp$count)
 ```
 
 Subject 1 was examined at 0.5 and 1.2 with two events in the first interval and
@@ -101,7 +101,7 @@ row carries no information that the count on the examination row does not:
 ```{r convert, eval = FALSE}
 new <- old
 new$count[old$event == 0] <- NA
-panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = new)
+panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
 ```
 
 ## Fitting
@@ -109,7 +109,7 @@ panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = new)
 ```{r fit}
 set.seed(1)
 d <- r_panel_count(200, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
 ```
 
@@ -159,7 +159,7 @@ Vaart. It is included for comparison with the literature, and because it is
 expensive it is computed only on request:
 
 ```{r profile}
-pfit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d,
+pfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
                   profile = TRUE)
 rbind(information = sqrt(diag(vcov(pfit, "information"))),
       profile     = sqrt(diag(vcov(pfit, "profile"))))
@@ -182,7 +182,7 @@ frailty leaves the rate model intact but destroys the Poisson structure.
 ```{r overdispersed}
 set.seed(2)
 od <- r_panel_count(200, beta = c(1, -1), frailty = 1)
-odfit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = od)
+odfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
 rbind(robust = sqrt(diag(vcov(odfit, "robust"))),
       information = sqrt(diag(vcov(odfit, "information"))))
 ```
@@ -196,7 +196,7 @@ think hard before reporting anything else.
 
 `baseline()` returns the estimated jumps and the cumulative baseline rate.
 
-```{r baseline}
+```{r baseline, fig.alt = "Estimated cumulative baseline rate rising with time, with the true curve overlaid as a dashed red line and closely tracking it."}
 head(baseline(fit))
 plot(fit)
 lines(fit$baseline$time, 8 * log(1 + fit$baseline$time), col = 2, lty = 2)
@@ -207,7 +207,7 @@ The dashed line is the truth, $\Lambda(t) = 8\log(1+t)$.
 Predicted mean counts follow each subject's covariate trajectory,
 $E[N(t) \mid X] = \int_0^t \exp(\beta'X(s)) \, d\hat\Lambda(s)$:
 
-```{r predict}
+```{r predict, fig.alt = "Predicted mean count for one subject as a step function, rising monotonically over follow-up."}
 pred <- predict(fit, d, type = "mean")
 head(pred)
 
@@ -230,7 +230,7 @@ in the application of the paper, and it is cheap: only the examination times
 enter, so none of the grid expansion the rate model needs is required.
 
 ```{r meanmodel}
-mfit <- panelmean(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+mfit <- panelmean(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(mfit)
 ```
 

@@ -144,7 +144,7 @@ ref_loglik <- function(d, beta, lambda) {
 }
 
 # Build the prepared arrays the way panelrate() does, for use by the reference.
-prep <- function(data, formula = PanelCount(id, tstart, tstop, count) ~ x1 + x2) {
+prep <- function(data, formula = pcd(id, tstart, tstop, count) ~ x1 + x2) {
   mf <- stats::model.frame(formula, data)
   X <- stats::model.matrix(attr(mf, "terms"), mf)
   X <- X[, colnames(X) != "(Intercept)", drop = FALSE]

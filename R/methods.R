@@ -37,7 +37,7 @@ nobs.pcdfit <- function(object, ...) object$n
 #' @examples
 #' set.seed(1)
 #' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-#' fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+#' fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' sqrt(diag(vcov(fit)))
 #' sqrt(diag(vcov(fit, "information")))
 #' @export
@@ -105,8 +105,8 @@ logLik.panelmean <- function(object, ...) {
 #' @examples
 #' set.seed(1)
 #' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-#' head(baseline(panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, d)))
-#' head(baseline(panelmean(PanelCount(id, tstart, tstop, count) ~ x1 + x2, d)))
+#' head(baseline(panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, d)))
+#' head(baseline(panelmean(pcd(id, tstart, tstop, count) ~ x1 + x2, d)))
 #' @export
 baseline <- function(object, ...) UseMethod("baseline")
 
@@ -151,7 +151,7 @@ print.pcdfit <- function(x, digits = max(3L, getOption("digits") - 3L), ...) {
 #' @examples
 #' set.seed(1)
 #' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-#' fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+#' fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' summary(fit)
 #' summary(fit, "information")
 #' @export
@@ -218,7 +218,7 @@ print.summary.pcdfit <- function(x, digits = max(3L, getOption("digits") - 3L),
 #' @examples
 #' set.seed(1)
 #' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-#' plot(panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, d))
+#' plot(panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, d))
 #' @export
 plot.pcdfit <- function(x, xlab = "Time", ylab = NULL, type = "s", ...) {
   b <- x$baseline

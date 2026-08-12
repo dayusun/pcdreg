@@ -20,9 +20,9 @@
   `panelrate(profile = TRUE)`). The means model has no likelihood, so only the
   sandwich estimator is available for it.
 
-* Model specification uses `PanelCount()` on the left hand side of the formula,
-  following the `Surv()` convention: `PanelCount(id, time, count)` for
-  examination-time rows and `PanelCount(id, tstart, tstop, count)` for
+* Model specification uses `pcd()` on the left hand side of the formula,
+  following the `Surv()` convention: `pcd(id, time, count)` for
+  examination-time rows and `pcd(id, tstart, tstop, count)` for
   counting-process rows carrying time-varying covariates.
 
 * Both fitters return an object inheriting from `"pcdfit"`, so `coef()`,

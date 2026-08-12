@@ -61,12 +61,12 @@ head(d)
 #> 5  2 0.000000 0.210000     2 0.7829328 0.5297196
 #> 6  2 0.210000 0.800000     2 0.7829328 0.5297196
 
-fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
 #> 
 #> Call:
-#> panelrate(formula = PanelCount(id, tstart, tstop, count) ~ x1 + 
-#>     x2, data = d)
+#> panelrate(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, 
+#>     data = d)
 #> 
 #> Proportional rate model for panel count data 
 #> Standard errors: robust sandwich
@@ -83,7 +83,7 @@ If covariates are time-invariant, one row per examination is enough and the
 three argument form fills in the interval starts:
 
 ```r
-panelrate(PanelCount(id, time, count) ~ x1 + x2, data = visits)
+panelrate(pcd(id, time, count) ~ x1 + x2, data = visits)
 ```
 
 ## Choosing a covariance estimator
@@ -106,7 +106,7 @@ algorithm has already produced.
 ``` r
 set.seed(2)
 od <- r_panel_count(150, frailty = 1)   # gamma frailty: not a Poisson process
-odfit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = od)
+odfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
 rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
       information = sqrt(diag(vcov(odfit, "information"))))
 #>                    x1         x2
@@ -150,7 +150,7 @@ methods. It needs only the examination times, so it is much cheaper to fit.
 
 
 ``` r
-mfit <- panelmean(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+mfit <- panelmean(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 cbind(rate = coef(fit), mean = coef(mfit))
 #>         rate       mean
 #> x1  1.181028  0.6398457

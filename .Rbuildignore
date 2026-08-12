@@ -8,3 +8,6 @@
 ^docker$
 ^LICENSE\.md$
 ^figure$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

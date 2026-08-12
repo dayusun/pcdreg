@@ -27,7 +27,7 @@ Covariance matrix of the estimated coefficients
 \examples{
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 sqrt(diag(vcov(fit)))
 sqrt(diag(vcov(fit, "information")))
 }

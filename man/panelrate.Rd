@@ -15,8 +15,8 @@ panelrate(
 )
 }
 \arguments{
-\item{formula}{A formula whose left hand side is a \code{\link[=PanelCount]{PanelCount()}} object,
-for example \code{PanelCount(id, tstart, tstop, count) ~ x1 + x2}. No intercept
+\item{formula}{A formula whose left hand side is a \code{\link[=pcd]{pcd()}} object,
+for example \code{pcd(id, tstart, tstop, count) ~ x1 + x2}. No intercept
 is fitted: it is absorbed into the baseline \eqn{\Lambda}.}
 
 \item{data}{A data frame containing the variables in \code{formula}.}
@@ -70,14 +70,14 @@ far more cheaply and more stably.
 }
 \section{Specifying the model}{
 
-The left hand side is always a \code{\link[=PanelCount]{PanelCount()}} object, which carries the
+The left hand side is always a \code{\link[=pcd]{pcd()}} object, which carries the
 subject, the interval and the event count. The right hand side is an ordinary
 model formula, so interactions, transformations, factors and \code{.} all behave
 as usual:
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{PanelCount(id, tstart, tstop, count) ~ x1 + x2
-PanelCount(id, tstart, tstop, count) ~ x1 * x2 + log(x3)
-PanelCount(id, time, count)          ~ .
+\if{html}{\out{<div class="sourceCode">}}\preformatted{pcd(id, tstart, tstop, count) ~ x1 + x2
+pcd(id, tstart, tstop, count) ~ x1 * x2 + log(x3)
+pcd(id, time, count)          ~ .
 }\if{html}{\out{</div>}}
 
 The dot expands to every column that is not part of the response, so the
@@ -97,7 +97,7 @@ conversion from cumulative counts, which is the mistake most worth avoiding.
 \examples{
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 fit
 summary(fit)
 
@@ -111,5 +111,5 @@ Murphy, S. A. and van der Vaart, A. W. (2000). On profile likelihood.
 \emph{Journal of the American Statistical Association} \strong{95}, 449--465.
 }
 \seealso{
-\code{\link[=PanelCount]{PanelCount()}}, \code{\link[=panelmean]{panelmean()}}, \code{\link[=vcov.pcdfit]{vcov.pcdfit()}}, \code{\link[=r_panel_count]{r_panel_count()}}
+\code{\link[=pcd]{pcd()}}, \code{\link[=panelmean]{panelmean()}}, \code{\link[=vcov.pcdfit]{vcov.pcdfit()}}, \code{\link[=r_panel_count]{r_panel_count()}}
 }

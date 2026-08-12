@@ -14,7 +14,7 @@
 
 \item{newdata}{Data to predict for. Defaults to the data the model was fitted
 to. For \code{type = "mean"} it must also contain the variables in the
-\code{\link[=PanelCount]{PanelCount()}} response, since the prediction follows each subject's
+\code{\link[=pcd]{pcd()}} response, since the prediction follows each subject's
 covariate trajectory; the counts themselves are ignored.}
 
 \item{type}{\code{"lp"} returns the linear predictor \eqn{\beta' X(t)} for each
@@ -43,7 +43,7 @@ practical drawback of that model with time-varying covariates.
 \examples{
 set.seed(1)
 d <- r_panel_count(60, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 head(predict(fit))
 head(predict(fit, type = "mean"))
 }

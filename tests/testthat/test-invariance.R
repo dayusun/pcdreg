@@ -6,7 +6,7 @@ dat <- local({
 ctrl <- panelrate_control(reltol = 1e-10, maxit = 20000L)
 
 fit_of <- function(d) {
-  panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d,
+  panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
             control = ctrl)
 }
 

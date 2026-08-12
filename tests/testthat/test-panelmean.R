@@ -4,7 +4,7 @@ make_data <- function(n = 40, seed = 20240303, ...) {
 }
 
 fit_mean <- function(d, ...) {
-  panelmean(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d,
+  panelmean(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
             control = panelmean_control(reltol = 1e-12), ...)
 }
 
@@ -67,7 +67,7 @@ test_that("only the sandwich covariance is offered, and no log likelihood", {
 test_that("the shared methods work for both models", {
   d <- make_data(40)
   mfit <- fit_mean(d)
-  rfit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+  rfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 
   for (fit in list(mfit, rfit)) {
     expect_s3_class(fit, "pcdfit")
@@ -130,7 +130,7 @@ test_that("the means model needs only the examination rows", {
   # prepare_panel(expand = FALSE) skips the grid expansion, so the examination
   # level arrays must be identical either way.
   d <- make_data(30)
-  mf <- stats::model.frame(PanelCount(id, tstart, tstop, count) ~ x1 + x2, d)
+  mf <- stats::model.frame(pcd(id, tstart, tstop, count) ~ x1 + x2, d)
   X <- stats::model.matrix(attr(mf, "terms"), mf)
   X <- X[, colnames(X) != "(Intercept)", drop = FALSE]
   y <- stats::model.response(mf)
@@ -149,7 +149,7 @@ test_that("the means model needs only the examination rows", {
 
 test_that("failure to converge is reported", {
   expect_warning(
-    panelmean(PanelCount(id, tstart, tstop, count) ~ x1 + x2,
+    panelmean(pcd(id, tstart, tstop, count) ~ x1 + x2,
               data = make_data(30),
               control = panelmean_control(maxit = 1L, reltol = 1e-14)),
     "did not converge"

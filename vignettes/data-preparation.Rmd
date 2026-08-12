@@ -35,7 +35,7 @@ an error the package can detect, and it will quietly give you the wrong answer.
 
 # The response
 
-`PanelCount()` builds the left hand side of the formula, in the same way `Surv()`
+`pcd()` builds the left hand side of the formula, in the same way `Surv()`
 does for survival models. It has two forms, and which you need depends on one
 question only: **do any covariates change value during follow-up?**
 
@@ -50,7 +50,7 @@ visits <- data.frame(
   arm   = c("drug", "drug", "drug", "placebo", "placebo")
 )
 
-PanelCount(visits$id, visits$time, visits$count)
+pcd(visits$id, visits$time, visits$count)
 ```
 
 Interval starts are filled in from each subject's previous examination, with
@@ -59,7 +59,7 @@ contributes $(0, 0.5]$, $(0.5, 1.1]$ and $(1.1, 1.9]$ with 2, 0 and 3 events.
 Fitting is then
 
 ```{r three-arg-fit, eval = FALSE}
-panelrate(PanelCount(id, time, count) ~ age + arm, data = visits)
+panelrate(pcd(id, time, count) ~ age + arm, data = visits)
 ```
 
 though not on five rows and two subjects: `age` and `arm` are perfectly
@@ -81,7 +81,7 @@ cp <- data.frame(
   dose   = c(10, 10, 25, 25)
 )
 
-PanelCount(cp$id, cp$tstart, cp$tstop, cp$count)
+pcd(cp$id, cp$tstart, cp$tstop, cp$count)
 ```
 
 Read it as: subject 1 was examined at 0.5 with 2 events and at 1.2 with none,
@@ -107,11 +107,11 @@ argument form: it can express anything the three argument form can.
 The right hand side is an ordinary model formula, so the usual things work.
 
 ```{r rhs, eval = FALSE}
-PanelCount(id, tstart, tstop, count) ~ x1 + x2          # main effects
-PanelCount(id, tstart, tstop, count) ~ x1 * x2          # interaction
-PanelCount(id, tstart, tstop, count) ~ x1 + log(x2)     # transformation
-PanelCount(id, tstart, tstop, count) ~ x1 + factor(site)
-PanelCount(id, tstart, tstop, count) ~ .                # everything else
+pcd(id, tstart, tstop, count) ~ x1 + x2          # main effects
+pcd(id, tstart, tstop, count) ~ x1 * x2          # interaction
+pcd(id, tstart, tstop, count) ~ x1 + log(x2)     # transformation
+pcd(id, tstart, tstop, count) ~ x1 + factor(site)
+pcd(id, tstart, tstop, count) ~ .                # everything else
 ```
 
 Factors are expanded with your contrast settings, and `predict()` reuses the
@@ -122,7 +122,7 @@ set.seed(1)
 d <- r_panel_count(60)
 d$site <- factor(c("north", "south", "east")[1 + d$id %% 3])
 
-fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + site, data = d)
+fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + site, data = d)
 names(coef(fit))
 ```
 
@@ -130,7 +130,7 @@ The dot expands to every column that is not part of the response, so `id`,
 `tstart`, `tstop` and `count` are excluded automatically:
 
 ```{r dot}
-names(coef(panelrate(PanelCount(id, tstart, tstop, count) ~ ., data = d)))
+names(coef(panelrate(pcd(id, tstart, tstop, count) ~ ., data = d)))
 ```
 
 ## There is no intercept
@@ -190,7 +190,7 @@ count on the examination row does not, so the conversion is one line:
 ```{r legacy, eval = FALSE}
 new <- old
 new$count[old$event == 0] <- NA
-panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = new)
+panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
 ```
 
 ## Examinations and covariate histories in separate tables
@@ -235,7 +235,7 @@ of every subject must begin there.
 
 ```{r err-origin, error = TRUE}
 bad <- data.frame(id = 1, tstart = 0.2, tstop = 1, count = 3, x = 1)
-panelrate(PanelCount(id, tstart, tstop, count) ~ x, data = bad)
+panelrate(pcd(id, tstart, tstop, count) ~ x, data = bad)
 ```
 
 If your times are calendar dates, or follow-up starts at enrolment, subtract each
@@ -247,7 +247,7 @@ where the previous one ended: no gaps, no overlaps.
 ```{r err-gap, error = TRUE}
 bad <- data.frame(id = c(1, 1), tstart = c(0, 0.7), tstop = c(0.5, 1),
                   count = c(2, 1), x = c(1, 1))
-panelrate(PanelCount(id, tstart, tstop, count) ~ x, data = bad)
+panelrate(pcd(id, tstart, tstop, count) ~ x, data = bad)
 ```
 
 A gap usually means a covariate history that does not cover the whole of
@@ -257,11 +257,11 @@ follow-up. Carry the last value forward rather than leaving the stretch out.
 on every row contributes nothing and is more likely a data error than an
 intention.
 
-**Counts are non-negative whole numbers.** `PanelCount()` refuses anything else,
+**Counts are non-negative whole numbers.** `pcd()` refuses anything else,
 which catches rates and averages passed by mistake.
 
 ```{r err-count, error = TRUE}
-PanelCount(1:2, c(1, 2), c(0.5, 1.2))
+pcd(1:2, c(1, 2), c(0.5, 1.2))
 ```
 
 **One row per subject may end at any given time.** Duplicate rows for the same
@@ -279,7 +279,7 @@ last1 <- max(d$tstop[d$id == 1])
 trailing <- transform(d[d$id == 1, ][1, ],
                       tstart = last1, tstop = last1 + 0.5, count = NA)
 
-fit2 <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2,
+fit2 <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
                   data = rbind(d, trailing))
 ```
 
@@ -305,7 +305,7 @@ trajectory must be present and contiguous. For the **means model** only the
 subject's own examination times are used, so it is much cheaper.
 
 ```{r grid}
-fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 c(subjects = fit$n, examinations = fit$nexam,
   grid_times = fit$ngrid, events = fit$nevent)
 ```

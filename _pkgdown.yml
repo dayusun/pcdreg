@@ -1,0 +1,68 @@
+url: https://dayusun.github.io/pcdreg/
+
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#2B4C7E"
+
+home:
+  title: Semiparametric regression for panel count data
+  description: >
+    Rate and means models for recurrent events observed only at intermittent
+    examination times, with covariates that may vary over time.
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+
+reference:
+- title: Fitting
+  desc: >
+    The two models. They take the same data and the same formula, so a model can
+    be refitted under the other by changing the function name alone.
+  contents:
+  - panelrate
+  - panelmean
+
+- title: Specifying the data
+  desc: >
+    The response constructor, used on the left hand side of the formula. See the
+    data preparation article for the layouts it accepts.
+  contents:
+  - pcd
+  - is.pcd
+
+- title: Inspecting a fit
+  desc: >
+    Both fitters return an object inheriting from `pcdfit`, so these work the
+    same way for either.
+  contents:
+  - vcov.pcdfit
+  - summary.pcdfit
+  - baseline
+  - predict.panelrate
+  - plot.pcdfit
+
+- title: Tuning
+  contents:
+  - panelrate_control
+  - panelmean_control
+
+- title: Simulation
+  desc: >
+    The design of the simulation study in Sun et al. (2024), useful for examples
+    and for checking the covariance estimators against known truth.
+  contents:
+  - r_panel_count
+
+- title: Package
+  contents:
+  - pcdreg-package
+
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - pcdreg
+  - data-preparation

@@ -18,12 +18,12 @@
 #' need depends on a single question: does any covariate change value during
 #' follow-up?
 #'
-#' `PanelCount(id, time, count)` is for data with one row per examination, which
+#' `pcd(id, time, count)` is for data with one row per examination, which
 #' is all that time-invariant covariates need. Interval starts are filled in as
 #' the previous examination time of the same subject, with the first interval
 #' starting at zero.
 #'
-#' `PanelCount(id, tstart, tstop, count)` is the counting process form, needed as
+#' `pcd(id, tstart, tstop, count)` is the counting process form, needed as
 #' soon as a covariate moves. Each row gives an interval `(tstart, tstop]` over
 #' which the covariates in that row are constant, exactly as for a time-varying
 #' [survival::coxph()] fit. The `count` column distinguishes the two kinds of
@@ -64,7 +64,7 @@
 #' no information and are dropped, with a message saying how many. A censoring
 #' row appended after the final visit is the usual reason for seeing it.
 #'
-#' @return An object of class `"PanelCount"`: a numeric matrix with columns
+#' @return An object of class `"pcd"`: a numeric matrix with columns
 #'   `id`, `tstart`, `tstop`, `count` and `exam`, carrying the original
 #'   identifier labels in the `"labels"` attribute. Missing counts are stored as
 #'   `count = 0` with `exam = 0`, so that the response contains no `NA` and
@@ -73,13 +73,13 @@
 #' @examples
 #' # One row per examination: subject 1 seen at 0.5 and 1.2 with 2 then 0
 #' # events, subject 2 seen once at 0.8 with 3.
-#' PanelCount(c(1, 1, 2), c(0.5, 1.2, 0.8), c(2, 0, 3))
+#' pcd(c(1, 1, 2), c(0.5, 1.2, 0.8), c(2, 0, 3))
 #'
 #' # Counting process form. Subject 1's covariates change at t = 0.9, part way
 #' # through the examination interval (0.5, 1.2], so that interval needs two
 #' # rows: the first ends at the change and carries NA, the second ends at the
 #' # examination and carries its count.
-#' PanelCount(
+#' pcd(
 #'   id     = c(1, 1, 1, 2),
 #'   time   = c(0.0, 0.5, 0.9, 0.0),
 #'   time2  = c(0.5, 0.9, 1.2, 0.8),
@@ -90,15 +90,15 @@
 #' # meet it.
 #' set.seed(1)
 #' d <- r_panel_count(40)
-#' fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+#' fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' c(subjects = fit$n, examinations = fit$nexam, events = fit$nevent)
 #'
 #' @seealso [panelrate()], [panelmean()], and
 #'   `vignette("data-preparation")` for converting data into this shape.
 #' @export
-PanelCount <- function(id, time, time2, count) {
+pcd <- function(id, time, time2, count) {
   if (missing(id) || missing(time) || missing(time2)) {
-    stop("`PanelCount()` needs at least `id`, `time` and a count.", call. = FALSE)
+    stop("`pcd()` needs at least `id`, `time` and a count.", call. = FALSE)
   }
   if (missing(count)) {
     tstop <- time
@@ -112,10 +112,10 @@ PanelCount <- function(id, time, time2, count) {
   n <- length(id)
   if (length(tstop) != n || length(count) != n ||
       (!is.null(tstart) && length(tstart) != n)) {
-    stop("All arguments to `PanelCount()` must have the same length.",
+    stop("All arguments to `pcd()` must have the same length.",
          call. = FALSE)
   }
-  if (n == 0L) stop("`PanelCount()` was given no observations.", call. = FALSE)
+  if (n == 0L) stop("`pcd()` was given no observations.", call. = FALSE)
 
   labels <- NULL
   if (is.factor(id)) {
@@ -172,18 +172,18 @@ PanelCount <- function(id, time, time2, count) {
   out <- cbind(id = idx, tstart = tstart, tstop = tstop, count = count,
                exam = as.numeric(exam))
   attr(out, "labels") <- labels
-  class(out) <- "PanelCount"
+  class(out) <- "pcd"
   out
 }
 
 #' @export
-print.PanelCount <- function(x, ...) {
+print.pcd <- function(x, ...) {
   print(format(x), quote = FALSE, ...)
   invisible(x)
 }
 
 #' @export
-format.PanelCount <- function(x, ...) {
+format.pcd <- function(x, ...) {
   labels <- attr(x, "labels")
   ids <- if (is.null(labels)) x[, "id"] else labels[x[, "id"]]
   count <- ifelse(x[, "exam"] == 1, format(x[, "count"]), "-")
@@ -192,14 +192,14 @@ format.PanelCount <- function(x, ...) {
 }
 
 #' @export
-"[.PanelCount" <- function(x, i, j, drop = FALSE) {
+"[.pcd" <- function(x, i, j, drop = FALSE) {
   y <- unclass(x)
   labels <- attr(x, "labels")
   attr(y, "labels") <- NULL
   if (missing(j)) {
     out <- y[i, , drop = FALSE]
     attr(out, "labels") <- labels
-    class(out) <- "PanelCount"
+    class(out) <- "pcd"
     out
   } else {
     y[i, j, drop = drop]
@@ -207,21 +207,21 @@ format.PanelCount <- function(x, ...) {
 }
 
 #' @export
-length.PanelCount <- function(x) nrow(unclass(x))
+length.pcd <- function(x) nrow(unclass(x))
 
 #' @export
-is.na.PanelCount <- function(x) {
+is.na.pcd <- function(x) {
   as.vector(rowSums(is.na(unclass(x))) > 0)
 }
 
 #' @export
-as.character.PanelCount <- function(x, ...) format(x, ...)
+as.character.pcd <- function(x, ...) format(x, ...)
 
 #' Test for a panel count response
 #'
 #' @param x An object.
-#' @return `TRUE` if `x` was created by [PanelCount()].
+#' @return `TRUE` if `x` was created by [pcd()].
 #' @examples
-#' is.PanelCount(PanelCount(c(1, 2), c(1, 1), c(0, 2)))
+#' is.pcd(pcd(c(1, 2), c(1, 1), c(0, 2)))
 #' @export
-is.PanelCount <- function(x) inherits(x, "PanelCount")
+is.pcd <- function(x) inherits(x, "pcd")

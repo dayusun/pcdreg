@@ -1,4 +1,4 @@
-# Turn a PanelCount response and a model matrix into the arrays the C++ core
+# Turn a pcd response and a model matrix into the arrays the C++ core
 # expects, after checking that the data really describe panel counts.
 #
 # Two layouts come out of this. The examination level arrays have one row per

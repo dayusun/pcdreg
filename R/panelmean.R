@@ -4,8 +4,8 @@
 pcd_model_data <- function(mf) {
   mt <- attr(mf, "terms")
   y <- stats::model.response(mf)
-  if (!is.PanelCount(y)) {
-    stop("The left hand side of `formula` must be a `PanelCount()` object.",
+  if (!is.pcd(y)) {
+    stop("The left hand side of `formula` must be a `pcd()` object.",
          call. = FALSE)
   }
   X <- stats::model.matrix(mt, mf)
@@ -51,14 +51,14 @@ panelmean_control <- function(maxit = 100L, reltol = 1e-9) {
 #' the paper behind [panelrate()] uses, and it is provided so the two model
 #' families can be compared on the same data.
 #'
-#' @param formula A formula whose left hand side is a [PanelCount()] object.
+#' @param formula A formula whose left hand side is a [pcd()] object.
 #' @param data A data frame containing the variables in `formula`.
 #' @param subset,na.action Handled as in [stats::lm()].
 #' @param control A list from [panelmean_control()].
 #' @param init Optional starting values for the coefficients.
 #'
 #' @section Specifying the model:
-#' Identical to [panelrate()]: the left hand side is a [PanelCount()] object and
+#' Identical to [panelrate()]: the left hand side is a [pcd()] object and
 #' the right hand side an ordinary model formula, with no intercept. The two
 #' fitters accept exactly the same data, so a model can be refitted under the
 #' other by changing the function name alone. See
@@ -99,15 +99,15 @@ panelmean_control <- function(maxit = 100L, reltol = 1e-9) {
 #' @examples
 #' set.seed(1)
 #' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-#' mfit <- panelmean(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+#' mfit <- panelmean(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' summary(mfit)
 #'
 #' # The rate model on the same data. The coefficients are not comparable
 #' # term by term, because the two models act on different quantities.
-#' rfit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+#' rfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' cbind(mean = coef(mfit), rate = coef(rfit))
 #'
-#' @seealso [panelrate()], [PanelCount()]
+#' @seealso [panelrate()], [pcd()]
 #' @export
 panelmean <- function(formula, data, subset, na.action,
                       control = panelmean_control(), init = NULL) {
