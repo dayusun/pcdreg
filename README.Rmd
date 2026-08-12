@@ -43,7 +43,7 @@ the same way a hazard ratio does in survival analysis.
 
 ```r
 # install.packages("remotes")
-remotes::install_github("commintern/pcdreg")
+remotes::install_github("dayusun/pcdreg")
 ```
 
 ## Usage
