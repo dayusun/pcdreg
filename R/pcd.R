@@ -89,7 +89,7 @@
 #' # Used on the left hand side of a formula, which is how you will normally
 #' # meet it.
 #' set.seed(1)
-#' d <- r_panel_count(40)
+#' d <- sim_pcd(40)
 #' fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' c(subjects = fit$n, examinations = fit$nexam, events = fit$nevent)
 #'
@@ -98,7 +98,10 @@
 #' @export
 pcd <- function(id, time, time2, count) {
   if (missing(id) || missing(time) || missing(time2)) {
-    stop("`pcd()` needs at least `id`, `time` and a count.", call. = FALSE)
+    cli::cli_abort(
+      "{.fn pcd} needs at least {.arg id}, {.arg time} and a count.",
+      class = "pcdreg_error_missing_argument"
+    )
   }
   if (missing(count)) {
     tstop <- time
@@ -112,10 +115,15 @@ pcd <- function(id, time, time2, count) {
   n <- length(id)
   if (length(tstop) != n || length(count) != n ||
       (!is.null(tstart) && length(tstart) != n)) {
-    stop("All arguments to `pcd()` must have the same length.",
-         call. = FALSE)
+    cli::cli_abort(
+      "All arguments to {.fn pcd} must have the same length.",
+      class = "pcdreg_error_length"
+    )
   }
-  if (n == 0L) stop("`pcd()` was given no observations.", call. = FALSE)
+  if (n == 0L) {
+    cli::cli_abort("{.fn pcd} was given no observations.",
+                   class = "pcdreg_error_empty")
+  }
 
   labels <- NULL
   if (is.factor(id)) {
@@ -126,27 +134,37 @@ pcd <- function(id, time, time2, count) {
     labels <- levels(f)
     idx <- as.integer(f)
   } else {
-    if (anyNA(id)) stop("`id` must not be missing.", call. = FALSE)
+    if (anyNA(id)) {
+      cli::cli_abort("{.arg id} must not be missing.",
+                     class = "pcdreg_error_missing_id")
+    }
     f <- factor(id, levels = sort(unique(id)))
     labels <- as.character(levels(f))
     idx <- as.integer(f)
   }
-  if (anyNA(idx)) stop("`id` must not be missing.", call. = FALSE)
+  if (anyNA(idx)) {
+    cli::cli_abort("{.arg id} must not be missing.",
+                   class = "pcdreg_error_missing_id")
+  }
 
   tstop <- as.numeric(tstop)
   if (anyNA(tstop) || any(!is.finite(tstop))) {
-    stop("Examination times must be present and finite.", call. = FALSE)
+    cli::cli_abort("Examination times must be present and finite.",
+                   class = "pcdreg_error_time")
   }
 
   exam <- !is.na(count)
   count <- as.numeric(count)
   count[!exam] <- 0
   if (any(count < 0) || any(count != trunc(count))) {
-    stop("`count` must be a non-negative whole number at examination times.",
-         call. = FALSE)
+    cli::cli_abort(
+      "{.arg count} must be a non-negative whole number at examination times.",
+      class = "pcdreg_error_count"
+    )
   }
   if (!any(exam)) {
-    stop("No examinations found: `count` is `NA` on every row.", call. = FALSE)
+    cli::cli_abort("No examinations found: {.arg count} is {.code NA} on every row.",
+                   class = "pcdreg_error_no_exam")
   }
 
   if (is.null(tstart)) {
@@ -160,13 +178,17 @@ pcd <- function(id, time, time2, count) {
   } else {
     tstart <- as.numeric(tstart)
     if (anyNA(tstart) || any(!is.finite(tstart))) {
-      stop("`tstart` must be present and finite.", call. = FALSE)
+      cli::cli_abort("{.arg tstart} must be present and finite.",
+                     class = "pcdreg_error_time")
     }
   }
 
   if (any(tstart >= tstop)) {
-    stop("Every interval must have `tstart` strictly less than `tstop`; ",
-         "row ", which(tstart >= tstop)[1L], " does not.", call. = FALSE)
+    cli::cli_abort(
+      "Every interval must have {.arg tstart} strictly less than {.arg tstop}, \
+       but row {which(tstart >= tstop)[1L]} does not.",
+      class = "pcdreg_error_interval"
+    )
   }
 
   out <- cbind(id = idx, tstart = tstart, tstop = tstop, count = count,
@@ -247,7 +269,8 @@ pcd_tiles <- function(x, order_by, max_subjects) {
 
   if (length(ids) > max_subjects) {
     ids <- ids[unique(round(seq(1, length(ids), length.out = max_subjects)))]
-    message("Showing ", length(ids), " of ", length(unique(id)), " subjects.")
+    cli::cli_inform("Showing {length(ids)} of {length(unique(id))} subjects.",
+                    class = "pcdreg_message_thinned")
   }
 
   y <- match(id, ids)
@@ -292,7 +315,9 @@ pcd_bins <- function(count, palette) {
 #' @param ... Ignored.
 #'
 #' @return A [ggplot2::ggplot()] object, so it can be titled, faceted or
-#'   themed like any other.
+#'   themed like any other. `autoplot()` returns it; `plot()` draws it and
+#'   returns it invisibly, so it can be used for its side effect like any
+#'   other `plot()` method.
 #'
 #' @details
 #' The tile is the unit of observation. A panel count is attributed to the
@@ -309,7 +334,7 @@ pcd_bins <- function(count, palette) {
 #'
 #' @examples
 #' set.seed(1)
-#' d <- r_panel_count(40)
+#' d <- sim_pcd(40)
 #' autoplot(with(d, pcd(id, tstart, tstop, count)))
 #'
 #' @seealso [autoplot.pcdfit()] for the fitted baseline function.
@@ -329,8 +354,9 @@ autoplot.pcd <- function(object, order_by = c("followup", "events", "none"),
     # A hairline of panel colour between tiles keeps neighbouring intervals
     # separable where a subject is examined often.
     ggplot2::geom_rect(
-      ggplot2::aes(xmin = tstart, xmax = tstop, ymin = y - 0.42,
-                   ymax = y + 0.42, fill = bin), colour = NA) +
+      ggplot2::aes(xmin = .data$tstart, xmax = .data$tstop,
+                   ymin = .data$y - 0.42, ymax = .data$y + 0.42,
+                   fill = .data$bin), colour = NA) +
     ggplot2::scale_fill_manual(values = b$values, name = "Events",
                                drop = FALSE) +
     ggplot2::scale_y_continuous(breaks = at, labels = t$labels[at],
@@ -343,7 +369,11 @@ autoplot.pcd <- function(object, order_by = c("followup", "events", "none"),
 
 #' @rdname autoplot.pcd
 #' @export
-plot.pcd <- function(x, ...) autoplot.pcd(x, ...)
+plot.pcd <- function(x, ...) {
+  p <- autoplot.pcd(x, ...)
+  print(p)
+  invisible(p)
+}
 
 # Recessive axes and grid: the marks carry the information, not the furniture.
 pcd_theme <- function() {

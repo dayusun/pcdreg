@@ -72,12 +72,11 @@
 <div class="section level2">
 <h2 id="the-data-and-the-model">The data and the model<a class="anchor" aria-label="anchor" href="#the-data-and-the-model"></a>
 </h2>
-<p>Panel count data arise when a recurrent event process is followed by
-periodic examinations. At each visit you learn how many events have
-happened since the last visit, but not when any of them happened.
-Hospitalisations counted at quarterly clinic visits, tumours counted at
-scheduled sacrifices, and insurance claims tallied at renewal all have
-this shape.</p>
+<p>Panel count data arise when a recurrent event process is observed at
+periodic examinations. Each visit gives the number of events since the
+previous visit, but not their event times. Examples include
+hospitalisations counted at quarterly clinic visits, tumours counted at
+scheduled sacrifices, and insurance claims tallied at renewal.</p>
 <p>Write
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">N_i(t)</annotation></semantics></math>
 for the number of events subject
@@ -97,30 +96,27 @@ for the count in
 is an unspecified non-decreasing baseline cumulative rate and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">X(t)</annotation></semantics></math>
 may vary over time.</p>
-<p>It is worth being clear about why the rate model rather than the
-proportional <em>means</em> model
+<p>The proportional <em>means</em> model is
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mrow><mo stretchy="true" form="prefix">[</mo><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">]</mo></mrow><mo>=</mo><mi>μ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mi>′</mi><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">E[N(t) \mid X(t)] = \mu(t)\exp(\beta'X(t))</annotation></semantics></math>.
-The means model requires
+It requires
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>
-to be non-decreasing, and when covariates fluctuate over time that is
-hard to arrange and harder to interpret: nothing stops a fitted means
-model from predicting a mean count that goes down. The rate model
-constrains only
+to be non-decreasing. With covariates that fluctuate over time, this
+condition is difficult to arrange and interpret: a fitted means model
+can predict a declining mean count. The rate model requires only
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mi>′</mi><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="0.167em"></mspace><mi>d</mi><mi>Λ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\exp(\beta'X(t))\,d\Lambda(t)</annotation></semantics></math>
-to be positive, so predicted means increase automatically, and
+to be positive. Predicted means therefore increase automatically, and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mi>′</mi><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\exp(\beta'X(t))</annotation></semantics></math>
-carries the same instantaneous relative-risk reading that a hazard ratio
-has in survival analysis.</p>
-<p>The means model is nonetheless the established alternative, and the
-package fits it too, with <code>pcdreg(model = "mean")</code>. The last
-section compares the two.</p>
+has the instantaneous relative-risk interpretation of a hazard ratio in
+survival analysis.</p>
+<p>The means model is the established alternative. The package also fits
+it with <code>pcdreg(model = "mean")</code>. The last section compares
+the models.</p>
 </div>
 <div class="section level2">
 <h2 id="getting-data-into-shape">Getting data into shape<a class="anchor" aria-label="anchor" href="#getting-data-into-shape"></a>
 </h2>
-<p>The response is built by <code><a href="../reference/pcd.html">pcd()</a></code>, which plays the role
-<code>Surv()</code> plays in survival analysis and, like it, has two
-forms.</p>
+<p><code><a href="../reference/pcd.html">pcd()</a></code> constructs the response. It plays the same role as
+<code>Surv()</code> in survival analysis and has two forms.</p>
 <p>When covariates do not change over time, one row per examination is
 enough:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -135,13 +131,12 @@ enough:</p>
 <span><span class="co">#&gt; [5] 2: (0.7, 1.4] 4</span></span></code></pre></div>
 <p>Interval starts are filled in from the previous examination of the
 same subject, with follow-up beginning at zero.</p>
-<p>When covariates <em>do</em> change over time you need the counting
-process form, one row per interval over which the covariates are
-constant. This is the same layout <code>coxph()</code> uses for
-time-dependent covariates. A row whose <code>count</code> is a number
-records an examination at <code>tstop</code>; a row whose
-<code>count</code> is <code>NA</code> records only that a covariate
-changed there.</p>
+<p>When covariates <em>do</em> change over time, use the counting
+process form: one row per interval with constant covariates. This is the
+layout <code>coxph()</code> uses for time-dependent covariates. A
+numeric <code>count</code> records an examination at <code>tstop</code>.
+An <code>NA</code> <code>count</code> records a covariate change
+only.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  id     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
@@ -152,21 +147,20 @@ changed there.</p>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">cp</span><span class="op">$</span><span class="va">id</span>, <span class="va">cp</span><span class="op">$</span><span class="va">tstart</span>, <span class="va">cp</span><span class="op">$</span><span class="va">tstop</span>, <span class="va">cp</span><span class="op">$</span><span class="va">count</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 1: (0.0, 0.5] 2 1: (0.5, 0.9] - 1: (0.9, 1.2] 0 2: (0.0, 0.8] 3</span></span></code></pre></div>
-<p>Subject 1 was examined at 0.5 and 1.2 with two events in the first
-interval and none in the second; the dose changed at 0.9, part way
-through the second interval, which is exactly the information the rate
-model can use and the means model cannot.</p>
+<p>Subject 1 was examined at 0.5 and 1.2, with two events in the first
+interval and none in the second. The dose changed at 0.9, within the
+second interval. The rate model uses this information; the means model
+cannot.</p>
 <p>Within a subject the intervals must be contiguous, start at zero, and
 end at an examination. <code><a href="../reference/pcdreg.html">pcdreg()</a></code> checks all of this and says
 which subject is at fault when it fails.</p>
 <div class="section level3">
 <h3 id="converting-data-held-in-the-older-layout">Converting data held in the older layout<a class="anchor" aria-label="anchor" href="#converting-data-held-in-the-older-layout"></a>
 </h3>
-<p>A common alternative layout repeats each panel count on every row of
-its interval and marks the examinations with a separate indicator.
-Turning that into the layout above takes one line, because a repeated
-count on a non-examination row carries no information that the count on
-the examination row does not:</p>
+<p>An older layout repeats each panel count on every row of its interval
+and marks examinations with a separate indicator. Convert it in one
+line. A repeated count on a non-examination row carries no information
+beyond the examination row:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">new</span> <span class="op">&lt;-</span> <span class="va">old</span></span>
 <span><span class="va">new</span><span class="op">$</span><span class="va">count</span><span class="op">[</span><span class="va">old</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">0</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
@@ -178,7 +172,7 @@ the examination row does not:</p>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/r_panel_count.html">r_panel_count</a></span><span class="op">(</span><span class="fl">200</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, lambda <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="fl">8</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">t</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_pcd.html">sim_pcd</a></span><span class="op">(</span><span class="fl">200</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, lambda <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="fl">8</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">t</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -201,11 +195,11 @@ would be indistinguishable from a rescaling of
 so <code><a href="../reference/pcdreg.html">pcdreg()</a></code> drops it and reports the baseline
 separately.</p>
 <p>Fitting maximises the likelihood implied by a nonhomogeneous Poisson
-process, using an EM algorithm that treats the unobserved per-time
-counts as missing data. That makes the awkward integral
+process. The EM algorithm treats the unobserved per-time counts as
+missing data. This makes the integral
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∫</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mi>′</mi><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><mi>d</mi><mi>Λ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\int \exp(\beta'X(t)) d\Lambda(t)</annotation></semantics></math>
-tractable and, usefully, means the covariates are only ever needed at
-the observed examination times rather than as complete trajectories.</p>
+tractable and requires covariates only at observed examination times,
+not as complete trajectories.</p>
 <p>The Poisson likelihood is a working device, not an assumption about
 the data. The estimator stays consistent and asymptotically normal when
 the counts are not Poisson at all.</p>
@@ -213,8 +207,8 @@ the counts are not Poisson at all.</p>
 <div class="section level2">
 <h2 id="which-standard-errors">Which standard errors<a class="anchor" aria-label="anchor" href="#which-standard-errors"></a>
 </h2>
-<p>That distinction matters most for the covariance. Three estimators
-are available.</p>
+<p>This distinction matters for the covariance. Three estimators are
+available.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">se</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">type</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">type</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>robust <span class="op">=</span> <span class="fu">se</span><span class="op">(</span><span class="st">"robust"</span><span class="op">)</span>, information <span class="op">=</span> <span class="fu">se</span><span class="op">(</span><span class="st">"information"</span><span class="op">)</span><span class="op">)</span></span>
@@ -233,20 +227,19 @@ built from the two matrices</p>
 <span><span class="co">#&gt;            x1         x2</span></span>
 <span><span class="co">#&gt; x1  0.8597886 -0.2345604</span></span>
 <span><span class="co">#&gt; x2 -0.2345604  0.8300369</span></span></code></pre></div>
-<p>both of which are by-products of the last EM iteration, so the robust
-standard errors are essentially free. It is consistent whether or not
-the counts are Poisson.</p>
+<p>Both matrices are by-products of the last EM iteration, so the robust
+standard errors are essentially free. The estimator is consistent
+whether or not the counts are Poisson.</p>
 <p><code>"information"</code> is
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>S</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mi>/</mi><mi>n</mi></mrow><annotation encoding="application/x-tex">S^{-1}/n</annotation></semantics></math>.
-Under the Poisson assumption
+Under the Poisson assumption,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>S</mi><annotation encoding="application/x-tex">S</annotation></semantics></math>
-is the efficient information and this is the right answer; it is also a
-cheap stand-in for the profile likelihood method, which it agrees with
+is the efficient information and this is the right answer. It is also a
+cheap stand-in for the profile likelihood method, with which it agrees
 closely.</p>
 <p><code>"profile"</code> is the numerical profile likelihood estimator
 of Murphy and van der Vaart. It is included for comparison with the
-literature, and because it is expensive it is computed only on
-request:</p>
+literature and is computed only on request because it is expensive:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span>,</span>
 <span>                  profile <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -255,27 +248,25 @@ request:</p>
 <span><span class="co">#&gt;                     x1         x2</span></span>
 <span><span class="co">#&gt; information 0.07937988 0.08078999</span></span>
 <span><span class="co">#&gt; profile     0.08034997 0.07755357</span></span></code></pre></div>
-<p>The two track each other closely, as the theory says they should,
-since both estimate
+<p>The two estimates track each other closely, as theory predicts,
+because both estimate
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>S</mi><annotation encoding="application/x-tex">S</annotation></semantics></math>.
-They are not identical: the profile version rests on a numerical
-derivative with a step of order
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>n</mi><mrow><mo>−</mo><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup><annotation encoding="application/x-tex">n^{-1/2}</annotation></semantics></math>,
-so it carries a discretisation error that shrinks only as the sample
-grows. That is the practical argument for preferring
-<code>"information"</code> whenever the Poisson assumption is tenable,
-and it is why <code>"profile"</code> is here mainly so that results can
-be compared with the literature.</p>
+They differ because the profile version uses a numerical derivative with
+a step of order
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>n</mi><mrow><mo>−</mo><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup><annotation encoding="application/x-tex">n^{-1/2}</annotation></semantics></math>
+and therefore has a discretisation error that shrinks only with sample
+size. Prefer <code>"information"</code> when the Poisson assumption is
+tenable. <code>"profile"</code> is mainly provided for comparison with
+the literature.</p>
 <div class="section level3">
 <h3 id="what-happens-when-the-poisson-assumption-fails">What happens when the Poisson assumption fails<a class="anchor" aria-label="anchor" href="#what-happens-when-the-poisson-assumption-fails"></a>
 </h3>
 <p>Real recurrent event data are usually overdispersed: some subjects
-are simply more event-prone than their covariates suggest. Simulating
-that with a gamma frailty leaves the rate model intact but destroys the
-Poisson structure.</p>
+are more event-prone than their covariates suggest. A gamma frailty
+preserves the rate model but destroys the Poisson structure.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
-<span><span class="va">od</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/r_panel_count.html">r_panel_count</a></span><span class="op">(</span><span class="fl">200</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, frailty <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">od</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_pcd.html">sim_pcd</a></span><span class="op">(</span><span class="fl">200</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, frailty <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">odfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">od</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>robust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov</a></span><span class="op">(</span><span class="va">odfit</span>, <span class="st">"robust"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>      information <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov</a></span><span class="op">(</span><span class="va">odfit</span>, <span class="st">"information"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -283,10 +274,9 @@ Poisson structure.</p>
 <span><span class="co">#&gt; robust      0.26146233 0.28237814</span></span>
 <span><span class="co">#&gt; information 0.04003442 0.03288915</span></span></code></pre></div>
 <p>The information-based standard errors are several times too small.
-The simulations in the paper put the resulting coverage of nominal 95%
-intervals around 15–22%. This is the reason <code>"robust"</code> is the
-default, and the reason to think hard before reporting anything
-else.</p>
+The paper’s simulations put coverage of the resulting nominal 95%
+intervals around 15–22%. For this reason, <code>"robust"</code> is the
+default and other choices require care.</p>
 </div>
 </div>
 <div class="section level2">
@@ -296,15 +286,20 @@ else.</p>
 cumulative baseline rate.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/baseline.html">baseline</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   time         jump   cumrate</span></span>
-<span><span class="co">#&gt; 1 0.01 1.207759e-01 0.1207759</span></span>
-<span><span class="co">#&gt; 2 0.02 0.000000e+00 0.1207759</span></span>
-<span><span class="co">#&gt; 3 0.03 0.000000e+00 0.1207759</span></span>
-<span><span class="co">#&gt; 4 0.04 1.355770e-46 0.1207759</span></span>
-<span><span class="co">#&gt; 5 0.05 4.659539e-01 0.5867298</span></span>
-<span><span class="co">#&gt; 6 0.06 0.000000e+00 0.5867298</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">baseline</span><span class="op">$</span><span class="va">time</span>, <span class="fl">8</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">fit</span><span class="op">$</span><span class="va">baseline</span><span class="op">$</span><span class="va">time</span><span class="op">)</span>, col <span class="op">=</span> <span class="fl">2</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
+<span><span class="co">#&gt;    time     jump cumrate</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.01 1.21<span style="color: #949494;">e</span><span style="color: #BB0000;">- 1</span>   0.121</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.02 0   <span style="color: #949494;"> </span>      0.121</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.03 0   <span style="color: #949494;"> </span>      0.121</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.04 1.36<span style="color: #949494;">e</span><span style="color: #BB0000;">-46</span>   0.121</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.05 4.66<span style="color: #949494;">e</span><span style="color: #BB0000;">- 1</span>   0.587</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.06 0   <span style="color: #949494;"> </span>      0.587</span></span>
+<span></span>
+<span><span class="va">truth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">baseline</span><span class="op">$</span><span class="va">time</span>,</span>
+<span>                    value <span class="op">=</span> <span class="fl">8</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">fit</span><span class="op">$</span><span class="va">baseline</span><span class="op">$</span><span class="va">time</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">truth</span>, colour <span class="op">=</span> <span class="st">"#c0392b"</span>, linetype <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="pcdreg_files/figure-html/baseline-1.png" class="r-plt" alt="Estimated cumulative baseline rate rising with time, with the true curve overlaid as a dashed red line and closely tracking it." width="576"></p>
 <p>The dashed line is the truth,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Λ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>8</mn><mo>log</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>+</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Lambda(t) = 8\log(1+t)</annotation></semantics></math>.</p>
@@ -313,21 +308,72 @@ cumulative baseline rate.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">d</span>, type <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   id time      mean</span></span>
-<span><span class="co">#&gt; 1  1 0.01 0.1554798</span></span>
-<span><span class="co">#&gt; 2  1 0.02 0.1554798</span></span>
-<span><span class="co">#&gt; 3  1 0.03 0.1554798</span></span>
-<span><span class="co">#&gt; 4  1 0.04 0.1554798</span></span>
-<span><span class="co">#&gt; 5  1 0.05 0.7553213</span></span>
-<span><span class="co">#&gt; 6  1 0.06 0.7553213</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
+<span><span class="co">#&gt;   id     time  mean</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1      0.01 0.155</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1      0.02 0.155</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1      0.03 0.155</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1      0.04 0.155</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1      0.05 0.755</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 1      0.06 0.755</span></span>
 <span></span>
 <span><span class="va">one</span> <span class="op">&lt;-</span> <span class="va">pred</span><span class="op">[</span><span class="va">pred</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">1</span>, <span class="op">]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">one</span><span class="op">$</span><span class="va">time</span>, <span class="va">one</span><span class="op">$</span><span class="va">mean</span>, type <span class="op">=</span> <span class="st">"s"</span>, xlab <span class="op">=</span> <span class="st">"Time"</span>,</span>
-<span>     ylab <span class="op">=</span> <span class="st">"Predicted mean count"</span>, main <span class="op">=</span> <span class="st">"Subject 1"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">one</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">mean</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_step</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"#2a78d6"</span>, linewidth <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="st">"Predicted mean count"</span>, title <span class="op">=</span> <span class="st">"Subject 1"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span></code></pre></div>
 <p><img src="pcdreg_files/figure-html/predict-1.png" class="r-plt" alt="Predicted mean count for one subject as a step function, rising monotonically over follow-up." width="576"></p>
-<p>The curve is non-decreasing even though <code>x1</code> steps up or
-down part way through follow-up, which is the structural advantage of
-the rate model.</p>
+<p>The curve is non-decreasing even though <code>x1</code> changes part
+way through follow-up. This is a structural advantage of the rate
+model.</p>
+</div>
+<div class="section level2">
+<h2 id="tidy-output">Tidy output<a class="anchor" aria-label="anchor" href="#tidy-output"></a>
+</h2>
+<p><code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code>, <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance()</a></code> and <code><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">augment()</a></code>
+methods are provided for the broom generics.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">fit</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
+<span><span class="co">#&gt;   term  estimate std.error statistic  p.value conf.low conf.high</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> x1        1.10    0.107       10.3 7.24<span style="color: #949494;">e</span><span style="color: #BB0000;">-25</span>    0.892     1.31 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> x2       -<span style="color: #BB0000;">1.11</span>    0.093<span style="text-decoration: underline;">8</span>     -<span style="color: #BB0000;">11.9</span> 1.53<span style="color: #949494;">e</span><span style="color: #BB0000;">-32</span>   -<span style="color: #BB0000;">1.30</span>     -<span style="color: #BB0000;">0.931</span></span></span>
+<span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
+<span><span class="co">#&gt;   model                         n nexam nevent ngrid logLik iterations converged</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Proportional rate model …   200   819   <span style="text-decoration: underline;">1</span>601   195 -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">106.</span>        522 TRUE</span></span></code></pre></div>
+<p><code>exponentiate = TRUE</code> reports
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>e</mi><mi>β</mi></msup><annotation encoding="application/x-tex">e^{\beta}</annotation></semantics></math>,
+the multiplicative effect on the rate, read as a hazard ratio is
+read.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">fit</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
+<span><span class="co">#&gt;   term  estimate std.error statistic  p.value conf.low conf.high</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> x1       3.01     0.107       10.3 7.24<span style="color: #949494;">e</span><span style="color: #BB0000;">-25</span>    2.44      3.71 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> x2       0.328    0.093<span style="text-decoration: underline;">8</span>     -<span style="color: #BB0000;">11.9</span> 1.53<span style="color: #949494;">e</span><span style="color: #BB0000;">-32</span>    0.273     0.394</span></span></code></pre></div>
+<p><code><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">augment()</a></code> attaches the fitted mean to each row, together
+with the observed cumulative count and their difference.
+<code>.resid</code> is the excess of events seen so far over the number
+the model implies, so it is the quantity to plot against time or against
+a covariate when checking fit.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">aug</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">augment</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">aug</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">aug</span><span class="op">$</span><span class="va">.observed</span><span class="op">)</span>,</span>
+<span>         <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"tstop"</span>, <span class="st">".fitted"</span>, <span class="st">".observed"</span>, <span class="st">".resid"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
+<span><span class="co">#&gt;      id tstop .fitted .observed .resid</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1  0.38    3.39         1 -<span style="color: #BB0000;">2.39</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     1  1.07    7.25         4 -<span style="color: #BB0000;">3.25</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     1  1.7    10.2          8 -<span style="color: #BB0000;">2.25</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     2  0.21    2.33         2 -<span style="color: #BB0000;">0.329</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     2  0.8     5.96         4 -<span style="color: #BB0000;">1.96</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>     2  1.25    8.57         4 -<span style="color: #BB0000;">4.57</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="the-means-model">The means model<a class="anchor" aria-label="anchor" href="#the-means-model"></a>
@@ -336,10 +382,10 @@ the rate model.</p>
 for these data,</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mrow><mo stretchy="true" form="prefix">[</mo><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">]</mo></mrow><mo>=</mo><mi>μ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mi>′</mi><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">E[N(t) \mid X(t)] = \mu(t)\exp(\beta'X(t)),</annotation></semantics></math></p>
 <p>by the estimating equation of Hu, Sun and Wei (2003). It is the
-comparator used in the application of the paper, and it is cheap: only
-the examination times enter, so none of the grid expansion the rate
-model needs is required.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+comparator in the paper’s application. It is inexpensive because only
+examination times enter; the grid expansion required by the rate model
+is unnecessary.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span>, model <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mfit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -359,60 +405,56 @@ model needs is required.</p>
 <p>There is no likelihood behind this estimator, so there is no log
 likelihood to report and <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> offers only the
 sandwich.</p>
-<p>Two things are worth care when reading the two fits side by side.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<p>The two fits require care in interpretation.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>, mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">mfit</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         rate       mean</span></span>
 <span><span class="co">#&gt; x1  1.101105  0.5384467</span></span>
 <span><span class="co">#&gt; x2 -1.114778 -1.0480179</span></span></code></pre></div>
-<p>First, these numbers are not two estimates of one quantity. With
-time-varying covariates the models are not reparametrisations of each
-other:
+<p>These numbers do not estimate one quantity. With time-varying
+covariates, the models are not reparametrisations of each other:
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>β</mi><annotation encoding="application/x-tex">\beta</annotation></semantics></math>
-acts on the instantaneous rate in one and on the cumulative mean in the
-other, so they answer different questions and there is no reason for
-them to agree. The data here were generated from the rate model, which
-is why <code><a href="../reference/pcdreg.html">pcdreg()</a></code> recovers the values used to simulate them
-and <code>pcdreg(model = "mean")</code> does not.</p>
+acts on the instantaneous rate in one and the cumulative mean in the
+other. They answer different questions and need not agree. These data
+were generated from the rate model, so <code><a href="../reference/pcdreg.html">pcdreg()</a></code> recovers
+the simulation values and <code>pcdreg(model = "mean")</code> does
+not.</p>
 <p>Second, nothing constrains the fitted
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>μ</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat\mu</annotation></semantics></math>
 to increase:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/baseline.html">baseline</a></span><span class="op">(</span><span class="va">mfit</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>increasing <span class="op">=</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/is.unsorted.html" class="external-link">is.unsorted</a></span><span class="op">(</span><span class="va">mu</span><span class="op">)</span>, decreases_at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">mu</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   increasing decreases_at </span></span>
 <span><span class="co">#&gt;            0           96</span></span></code></pre></div>
-<p>That is the difficulty with the means model this package’s rate model
-is meant to avoid, and it is visible here on ordinary simulated data
-rather than only in principle. A mean function that falls is not a
-numerical failure; it is what the estimator returns when covariate
-values move up and down, and it is why predicted means from
-<code>pcdreg(model = "mean")</code> can decrease while those from
-<code><a href="../reference/pcdreg.html">pcdreg()</a></code> cannot.</p>
+<p>This is the difficulty that the package’s rate model addresses. It
+appears in ordinary simulated data. A declining mean function is not a
+numerical failure. It is the estimator’s result when covariate values
+move up and down. Predicted means from
+<code>pcdreg(model = "mean")</code> can therefore decrease, while those
+from <code><a href="../reference/pcdreg.html">pcdreg()</a></code> cannot.</p>
 </div>
 <div class="section level2">
 <h2 id="computation">Computation<a class="anchor" aria-label="anchor" href="#computation"></a>
 </h2>
-<p>The EM algorithm converges linearly and, on this problem, slowly:
-plain EM can still be moving in the fifth decimal place after tens of
-thousands of passes. <code><a href="../reference/pcdreg.html">pcdreg()</a></code> therefore extrapolates the
-iterations using the SQUAREM scheme of Varadhan and Roland, keeping an
-extrapolated point only when a stabilising EM pass from it does at least
-as well on the observed data log likelihood. The fixed point is
-unchanged; only the number of passes needed to reach it falls, typically
-by an order of magnitude.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<p>The EM algorithm converges linearly and slowly on this problem: plain
+EM can still be changing in the fifth decimal place after tens of
+thousands of passes. <code><a href="../reference/pcdreg.html">pcdreg()</a></code> extrapolates the iterations
+with the SQUAREM scheme of Varadhan and Roland. An extrapolated point is
+kept only if a stabilising EM pass from it does at least as well on the
+observed-data log likelihood. The fixed point is unchanged. The required
+number of passes typically falls by an order of magnitude.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>iterations <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">iterations</span>, EM_passes <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">passes</span>,</span>
 <span>  converged <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">converged</span><span class="op">)</span></span>
 <span><span class="co">#&gt; iterations  EM_passes  converged </span></span>
 <span><span class="co">#&gt;        522       1567          1</span></span></code></pre></div>
 <p>Set <code>accelerate = FALSE</code> in <code><a href="../reference/pcdreg_control.html">pcdreg_control()</a></code>
 to recover plain EM.</p>
-<p>The dominant cost is the size of the pooled grid of distinct
-examination times, because the covariate trajectory of every subject has
-to be evaluated at every grid time within their follow-up. Examination
-times that tie across subjects, which is what scheduled visits produce
-in practice, keep that grid small.</p>
+<p>The dominant cost is the pooled grid of distinct examination times.
+The covariate trajectory for every subject is evaluated at every grid
+time within follow-up. Tied examination times across subjects, as with
+scheduled visits, keep the grid small.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

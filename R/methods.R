@@ -36,7 +36,7 @@ nobs.pcdfit <- function(object, ...) object$n
 #'
 #' @examples
 #' set.seed(1)
-#' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+#' d <- sim_pcd(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 #' fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' sqrt(diag(vcov(fit)))
 #' sqrt(diag(vcov(fit, "information")))
@@ -47,16 +47,20 @@ vcov.pcdfit <- function(object, type = c("robust", "information", "profile"),
   out <- object$vcov[[type]]
   if (is.null(out)) {
     if (pcd_is_mean(object)) {
-      stop("The means model is fitted by an estimating equation rather than a ",
-           "likelihood, so only `type = \"robust\"` is available.",
-           call. = FALSE)
+      cli::cli_abort(
+        "The means model is fitted by an estimating equation rather than a
+         likelihood, so only {.code type = \"robust\"} is available.",
+        class = "pcdreg_error_vcov_type"
+      )
     }
     if (type == "profile") {
-      stop("The profile likelihood covariance was not computed. Refit with ",
-           "`pcdreg(..., profile = TRUE)`.", call. = FALSE)
+      cli::cli_abort(c(
+        "The profile likelihood covariance was not computed.",
+        "i" = "Refit with {.code pcdreg(..., profile = TRUE)}."
+      ), class = "pcdreg_error_no_profile")
     }
-    stop("The ", type, " covariance is unavailable for this fit.",
-         call. = FALSE)
+    cli::cli_abort("The {type} covariance is unavailable for this fit.",
+                   class = "pcdreg_error_vcov_type")
   }
   out
 }
@@ -83,9 +87,11 @@ confint.pcdfit <- function(object, parm, level = 0.95,
 #' @export
 logLik.pcdfit <- function(object, ...) {
   if (pcd_is_mean(object)) {
-    stop("The means model is fitted by an estimating equation, so it has no ",
-         "log likelihood. Refit with `model = \"rate\"` if you need one.",
-         call. = FALSE)
+    cli::cli_abort(c(
+      "The means model is fitted by an estimating equation, so it has no log
+       likelihood.",
+      "i" = "Refit with {.code model = \"rate\"} if you need one."
+    ), class = "pcdreg_error_no_loglik")
   }
   # The baseline contributes one free jump per grid time.
   structure(object$loglik,
@@ -97,13 +103,14 @@ logLik.pcdfit <- function(object, ...) {
 #'
 #' @param object A fitted [pcdreg()] model.
 #' @param ... Ignored.
-#' @return A data frame with one row per examination time on the pooled grid.
+#' @return A [tibble][tibble::tibble] with one row per examination time on the
+#'   pooled grid.
 #'   For [pcdreg()] it gives the jump sizes and the cumulative baseline rate
 #'   \eqn{\Lambda(t)}; for [pcdreg()] it gives the baseline mean
 #'   \eqn{\mu(t)}, which is not constrained to increase.
 #' @examples
 #' set.seed(1)
-#' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+#' d <- sim_pcd(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 #' head(baseline(pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, d)))
 #' head(baseline(pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, d, model = "mean")))
 #' @export
@@ -149,7 +156,7 @@ print.pcdfit <- function(x, digits = max(3L, getOption("digits") - 3L), ...) {
 #'
 #' @examples
 #' set.seed(1)
-#' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+#' d <- sim_pcd(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 #' fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' summary(fit)
 #' summary(fit, "information")
@@ -214,7 +221,9 @@ print.summary.pcdfit <- function(x, digits = max(3L, getOption("digits") - 3L),
 #'
 #' @return A [ggplot2::ggplot()] object: a step function of the cumulative
 #'   baseline rate for the rate model, or of the baseline mean for the means
-#'   model.
+#'   model. `autoplot()` returns it; `plot()` draws it and returns it
+#'   invisibly, so it can be used for its side effect like any other `plot()`
+#'   method.
 #'
 #' @details
 #' The rate model's \eqn{\hat\Lambda} increases by construction. The means
@@ -224,7 +233,7 @@ print.summary.pcdfit <- function(x, digits = max(3L, getOption("digits") - 3L),
 #'
 #' @examples
 #' set.seed(1)
-#' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+#' d <- sim_pcd(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 #' autoplot(pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, d))
 #' @export
 autoplot.pcdfit <- function(object, ...) {
@@ -233,7 +242,7 @@ autoplot.pcdfit <- function(object, ...) {
   column <- pcd_baseline_column(object)
   df <- data.frame(time = c(0, b$time), value = c(0, b[[column]]))
 
-  ggplot2::ggplot(df, ggplot2::aes(x = time, y = value)) +
+  ggplot2::ggplot(df, ggplot2::aes(x = .data$time, y = .data$value)) +
     ggplot2::geom_step(colour = "#2a78d6", linewidth = 0.6) +
     ggplot2::labs(x = "Time",
                   y = if (is_mean) expression(hat(mu)(t)) else
@@ -245,4 +254,8 @@ autoplot.pcdfit <- function(object, ...) {
 
 #' @rdname autoplot.pcdfit
 #' @export
-plot.pcdfit <- function(x, ...) autoplot.pcdfit(x, ...)
+plot.pcdfit <- function(x, ...) {
+  p <- autoplot.pcdfit(x, ...)
+  print(p)
+  invisible(p)
+}

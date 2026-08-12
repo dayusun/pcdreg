@@ -41,8 +41,9 @@ predict(object, newdata, type = c("lp", "mean"), ...)
 ## Value
 
 For `type = "lp"`, a numeric vector with one element per row of
-`newdata`. For `type = "mean"`, a data frame with columns `id`, `time`
-and `mean`.
+`newdata`. For `type = "mean"`, a
+[tibble](https://tibble.tidyverse.org/reference/tibble.html) with
+columns `id`, `time` and `mean`.
 
 ## Details
 
@@ -57,17 +58,19 @@ time-varying covariates.
 
 ``` r
 set.seed(1)
-d <- r_panel_count(60, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+d <- sim_pcd(60, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 head(predict(fit))
 #>         1         2         3         4         5         6 
 #> 0.4582126 0.4582126 0.4582126 0.5172010 0.4472924 0.4472924 
 head(predict(fit, type = "mean"))
-#>   id time         mean
-#> 1  1 0.01 1.595922e-45
-#> 2  1 0.02 4.762185e-43
-#> 3  1 0.03 9.914545e-41
-#> 4  1 0.04 7.846571e-20
-#> 5  1 0.05 1.569314e-19
-#> 6  1 0.07 3.611803e-01
+#> # A tibble: 6 × 3
+#>   id     time     mean
+#>   <chr> <dbl>    <dbl>
+#> 1 1      0.01 1.60e-45
+#> 2 1      0.02 4.76e-43
+#> 3 1      0.03 9.91e-41
+#> 4 1      0.04 7.85e-20
+#> 5 1      0.05 1.57e-19
+#> 6 1      0.07 3.61e- 1
 ```

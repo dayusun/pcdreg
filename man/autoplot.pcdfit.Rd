@@ -17,7 +17,9 @@
 \value{
 A \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}} object: a step function of the cumulative
 baseline rate for the rate model, or of the baseline mean for the means
-model.
+model. \code{autoplot()} returns it; \code{plot()} draws it and returns it
+invisibly, so it can be used for its side effect like any other \code{plot()}
+method.
 }
 \description{
 Plot the estimated baseline function
@@ -30,6 +32,6 @@ because that behaviour is the point of the comparison between the two models.
 }
 \examples{
 set.seed(1)
-d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+d <- sim_pcd(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 autoplot(pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, d))
 }

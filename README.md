@@ -1,41 +1,42 @@
 
-
 # pcdreg
 
-Regression analysis of **panel count data**: recurrent events observed only at
-intermittent examination times, so that you know how many events happened
-between visits but not when. `pcdreg` fits the two semiparametric models used
-for these data, allowing the covariates to vary over time.
+Regression analysis of **panel count data**: recurrent events observed
+only at intermittent examination times, so that you know how many events
+happened between visits but not when. `pcdreg` fits the two
+semiparametric models used for these data, allowing the covariates to
+vary over time.
 
-| | Model | Fitted by |
-|---|---|---|
-| `pcdreg()` | $E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t)$ | nonparametric maximum likelihood, via EM |
-| `pcdreg(model = "mean")` | $E[N(t) \mid X(t)] = \mu(t)\exp(\beta' X(t))$ | estimating equations |
+|                          | Model                                                   | Fitted by                                |
+|--------------------------|---------------------------------------------------------|------------------------------------------|
+| `pcdreg()`               | $E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t)$ | nonparametric maximum likelihood, via EM |
+| `pcdreg(model = "mean")` | $E[N(t) \mid X(t)] = \mu(t)\exp(\beta' X(t))$           | estimating equations                     |
 
-`pcdreg()` implements the estimation and covariance methods of Sun, Guo, Li,
-Tu and Sun (2024), [*Bernoulli* **30**(4),
-3251--3275](https://doi.org/10.3150/23-BEJ1713); `pcdreg(model = "mean")` implements Hu,
-Sun and Wei (2003), [*Scandinavian Journal of Statistics* **30**(1),
-25--43](https://doi.org/10.1111/1467-9469.00316), the comparator used in that
-paper's application.
+`pcdreg()` implements the estimation and covariance methods of Sun, Guo,
+Li, Tu and Sun (2024), [*Bernoulli* **30**(4),
+3251–3275](https://doi.org/10.3150/23-BEJ1713); `pcdreg(model = "mean")`
+implements Hu, Sun and Wei (2003), [*Scandinavian Journal of Statistics*
+**30**(1), 25–43](https://doi.org/10.1111/1467-9469.00316), the
+comparator used in that paper’s application.
 
-With time-varying covariates the two are not reparametrisations of each other,
-so their coefficients answer different questions rather than estimating one
-common quantity.
+With time-varying covariates the two are not reparametrisations of each
+other, so their coefficients answer different questions rather than
+estimating one common quantity.
 
 ## Why the rate model
 
 With time-varying covariates the competing proportional *means* model
 $E[N(t) \mid X(t)] = \mu(t)\exp(\beta'X(t))$ requires $\mu$ to be
-non-decreasing, which is awkward to guarantee when covariate values fluctuate,
-and its predicted mean curves need not be monotone. The rate model only needs
-the right hand side to be positive, so predicted means are non-decreasing by
-construction, and $\exp(\beta'X(t))$ reads as an instantaneous relative risk in
-the same way a hazard ratio does in survival analysis.
+non-decreasing, which is awkward to guarantee when covariate values
+fluctuate, and its predicted mean curves need not be monotone. The rate
+model only needs the right hand side to be positive, so predicted means
+are non-decreasing by construction, and $\exp(\beta'X(t))$ reads as an
+instantaneous relative risk in the same way a hazard ratio does in
+survival analysis.
 
 ## Installation
 
-```r
+``` r
 # install.packages("remotes")
 remotes::install_github("dayusun/pcdreg")
 ```
@@ -43,23 +44,25 @@ remotes::install_github("dayusun/pcdreg")
 ## Usage
 
 Data go in counting process form, one row per interval over which the
-covariates are constant. A row whose `count` is a number records an examination
-at `tstop`; a row whose `count` is `NA` records only that a covariate changed.
-
+covariates are constant. A row whose `count` is a number records an
+examination at `tstop`; a row whose `count` is `NA` records only that a
+covariate changed.
 
 ``` r
 library(pcdreg)
 set.seed(1)
 
-d <- r_panel_count(150, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+d <- sim_pcd(150, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 head(d)
-#>   id   tstart    tstop count        x1        x2
-#> 1  1 0.000000 0.380000     1 0.8983897 0.6607978
-#> 2  1 0.380000 1.070000     3 0.8983897 0.6607978
-#> 3  1 1.070000 1.258228    NA 0.8983897 0.6607978
-#> 4  1 1.258228 1.700000     4 0.9446753 0.6607978
-#> 5  2 0.000000 0.210000     2 0.7829328 0.5297196
-#> 6  2 0.210000 0.800000     2 0.7829328 0.5297196
+#> # A tibble: 6 × 6
+#>      id tstart tstop count    x1    x2
+#>   <int>  <dbl> <dbl> <dbl> <dbl> <dbl>
+#> 1     1   0     0.38     1 0.898 0.661
+#> 2     1   0.38  1.07     3 0.898 0.661
+#> 3     1   1.07  1.26    NA 0.898 0.661
+#> 4     1   1.26  1.7      4 0.945 0.661
+#> 5     2   0     0.21     2 0.783 0.530
+#> 6     2   0.21  0.8      2 0.783 0.530
 
 fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
@@ -78,33 +81,33 @@ summary(fit)
 #> Log likelihood -830.8 in 312 EM iterations.
 ```
 
-If covariates are time-invariant, one row per examination is enough and the
-three argument form fills in the interval starts:
+If covariates are time-invariant, one row per examination is enough and
+the three argument form fills in the interval starts:
 
-```r
+``` r
 pcdreg(pcd(id, time, count) ~ x1 + x2, data = visits)
 ```
 
 ## Choosing a covariance estimator
 
-Estimation maximises the likelihood a Poisson process would give, but that
-assumption is only a working device. Three covariance estimators are available:
+Estimation maximises the likelihood a Poisson process would give, but
+that assumption is only a working device. Three covariance estimators
+are available:
 
-| `vcov(fit, type =)` | What it is | Needs the Poisson assumption? |
-|---|---|---|
-| `"robust"` (default) | sandwich $\Omega^{-1} S \Omega^{-1}/n$ | no |
-| `"information"` | efficient information $S^{-1}/n$ | yes |
-| `"profile"` | Murphy--van der Vaart profile likelihood | yes |
+| `vcov(fit, type =)`  | What it is                              | Needs the Poisson assumption? |
+|----------------------|-----------------------------------------|-------------------------------|
+| `"robust"` (default) | sandwich $\Omega^{-1} S \Omega^{-1}/n$  | no                            |
+| `"information"`      | efficient information $S^{-1}/n$        | yes                           |
+| `"profile"`          | Murphy–van der Vaart profile likelihood | yes                           |
 
-When counts are overdispersed relative to Poisson, which is the usual situation,
-the last two understate the standard errors, sometimes by a factor of five or
-more. The robust estimator costs nothing extra beyond quantities the EM
-algorithm has already produced.
-
+When counts are overdispersed relative to Poisson, which is the usual
+situation, the last two understate the standard errors, sometimes by a
+factor of five or more. The robust estimator costs nothing extra beyond
+quantities the EM algorithm has already produced.
 
 ``` r
 set.seed(2)
-od <- r_panel_count(150, frailty = 1)   # gamma frailty: not a Poisson process
+od <- sim_pcd(150, frailty = 1)   # gamma frailty: not a Poisson process
 odfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
 rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
       information = sqrt(diag(vcov(odfit, "information"))))
@@ -115,38 +118,64 @@ rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
 
 ## The baseline and predictions
 
-
 ``` r
 head(baseline(fit))
-#>   time         jump   cumrate
-#> 1 0.01 1.235997e-01 0.1235997
-#> 2 0.02 0.000000e+00 0.1235997
-#> 3 0.03 0.000000e+00 0.1235997
-#> 4 0.04 6.947206e-35 0.1235997
-#> 5 0.05 4.677466e-01 0.5913463
-#> 6 0.06 4.839548e-67 0.5913463
-plot(fit)
+#> # A tibble: 6 × 3
+#>    time     jump cumrate
+#>   <dbl>    <dbl>   <dbl>
+#> 1  0.01 1.24e- 1   0.124
+#> 2  0.02 0          0.124
+#> 3  0.03 0          0.124
+#> 4  0.04 6.95e-35   0.124
+#> 5  0.05 4.68e- 1   0.591
+#> 6  0.06 4.84e-67   0.591
+autoplot(fit)
 ```
 
-![plot of chunk baseline](man/figures/baseline-1.png)
+<img src="man/figures/baseline-1.png" alt="Estimated cumulative baseline rate as a step function rising steeply early in follow-up and flattening as time increases."  />
 
 ``` r
 
 head(predict(fit, d, type = "mean"))
-#>   id time      mean
-#> 1  1 0.01 0.1810132
-#> 2  1 0.02 0.1810132
-#> 3  1 0.03 0.1810132
-#> 4  1 0.04 0.1810132
-#> 5  1 0.05 0.8660341
-#> 6  1 0.06 0.8660341
+#> # A tibble: 6 × 3
+#>   id     time  mean
+#>   <chr> <dbl> <dbl>
+#> 1 1      0.01 0.181
+#> 2 1      0.02 0.181
+#> 3 1      0.03 0.181
+#> 4 1      0.04 0.181
+#> 5 1      0.05 0.866
+#> 6 1      0.06 0.866
+```
+
+`autoplot()` methods return `ggplot` objects, for the fitted baseline
+above and for the data itself, drawn as one tile per examination
+interval shaded by its count.
+
+## Tidy output
+
+`tidy()`, `glance()` and `augment()` methods are provided, so a fit
+drops straight into a tidy workflow.
+
+``` r
+tidy(fit, conf.int = TRUE)
+#> # A tibble: 2 × 7
+#>   term  estimate std.error statistic  p.value conf.low conf.high
+#>   <chr>    <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+#> 1 x1        1.18     0.127      9.30 1.37e-20    0.932     1.43 
+#> 2 x2       -1.03     0.106     -9.74 2.07e-22   -1.24     -0.821
+glance(fit)
+#> # A tibble: 1 × 8
+#>   model                         n nexam nevent ngrid logLik iterations converged
+#>   <chr>                     <int> <int>  <dbl> <int>  <dbl>      <dbl> <lgl>    
+#> 1 Proportional rate model …   150   631   1169   187  -831.        312 TRUE
 ```
 
 ## The means model
 
-`pcdreg(model = "mean")` takes the same formula and returns an object supporting the same
-methods. It needs only the examination times, so it is much cheaper to fit.
-
+`pcdreg(model = "mean")` takes the same formula and returns an object
+supporting the same methods. It needs only the examination times, so it
+is much cheaper to fit.
 
 ``` r
 mfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d, model = "mean")
@@ -156,10 +185,9 @@ cbind(rate = coef(fit), mean = coef(mfit))
 #> x2 -1.028303 -0.9919493
 ```
 
-Nothing constrains its fitted mean function to increase, and with covariates
-that fluctuate it generally does not — the drawback of the means model that
-motivates the rate model:
-
+Nothing constrains its fitted mean function to increase, and with
+covariates that fluctuate it generally does not — the drawback of the
+means model that motivates the rate model:
 
 ``` r
 mu <- baseline(mfit)$mean
@@ -170,6 +198,6 @@ c(increasing = !is.unsorted(mu), decreases_at = sum(diff(mu) < 0))
 
 ## Citation
 
-```r
+``` r
 citation("pcdreg")
 ```

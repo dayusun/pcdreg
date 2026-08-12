@@ -1,6 +1,6 @@
 dat <- local({
   set.seed(505)
-  r_panel_count(35, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+  sim_pcd(35, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 })
 
 ctrl <- pcdreg_control(reltol = 1e-10, maxit = 20000L)

@@ -6,12 +6,11 @@ library(pcdreg)
 
 ## The data and the model
 
-Panel count data arise when a recurrent event process is followed by
-periodic examinations. At each visit you learn how many events have
-happened since the last visit, but not when any of them happened.
-Hospitalisations counted at quarterly clinic visits, tumours counted at
-scheduled sacrifices, and insurance claims tallied at renewal all have
-this shape.
+Panel count data arise when a recurrent event process is observed at
+periodic examinations. Each visit gives the number of events since the
+previous visit, but not their event times. Examples include
+hospitalisations counted at quarterly clinic visits, tumours counted at
+scheduled sacrifices, and insurance claims tallied at renewal.
 
 Write $N_{i}(t)$ for the number of events subject $i$ has experienced by
 time $t$, observed at times $T_{i1} < \ldots < T_{iJ_{i}}$, and
@@ -24,28 +23,24 @@ $$E\left\lbrack dN(t) \mid X(t) \right\rbrack = \exp\left( \beta\prime X(t) \rig
 where $\Lambda$ is an unspecified non-decreasing baseline cumulative
 rate and $X(t)$ may vary over time.
 
-It is worth being clear about why the rate model rather than the
-proportional *means* model
+The proportional *means* model is
 $E\left\lbrack N(t) \mid X(t) \right\rbrack = \mu(t)\exp\left( \beta\prime X(t) \right)$.
-The means model requires $\mu$ to be non-decreasing, and when covariates
-fluctuate over time that is hard to arrange and harder to interpret:
-nothing stops a fitted means model from predicting a mean count that
-goes down. The rate model constrains only
-$\exp\left( \beta\prime X(t) \right)\, d\Lambda(t)$ to be positive, so
-predicted means increase automatically, and
-$\exp\left( \beta\prime X(t) \right)$ carries the same instantaneous
-relative-risk reading that a hazard ratio has in survival analysis.
+It requires $\mu$ to be non-decreasing. With covariates that fluctuate
+over time, this condition is difficult to arrange and interpret: a
+fitted means model can predict a declining mean count. The rate model
+requires only $\exp\left( \beta\prime X(t) \right)\, d\Lambda(t)$ to be
+positive. Predicted means therefore increase automatically, and
+$\exp\left( \beta\prime X(t) \right)$ has the instantaneous
+relative-risk interpretation of a hazard ratio in survival analysis.
 
-The means model is nonetheless the established alternative, and the
-package fits it too, with `pcdreg(model = "mean")`. The last section
-compares the two.
+The means model is the established alternative. The package also fits it
+with `pcdreg(model = "mean")`. The last section compares the models.
 
 ## Getting data into shape
 
-The response is built by
-[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md), which plays
-the role `Surv()` plays in survival analysis and, like it, has two
-forms.
+[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md) constructs the
+response. It plays the same role as `Surv()` in survival analysis and
+has two forms.
 
 When covariates do not change over time, one row per examination is
 enough:
@@ -65,11 +60,11 @@ pcd(visits$id, visits$time, visits$count)
 Interval starts are filled in from the previous examination of the same
 subject, with follow-up beginning at zero.
 
-When covariates *do* change over time you need the counting process
-form, one row per interval over which the covariates are constant. This
-is the same layout `coxph()` uses for time-dependent covariates. A row
-whose `count` is a number records an examination at `tstop`; a row whose
-`count` is `NA` records only that a covariate changed there.
+When covariates *do* change over time, use the counting process form:
+one row per interval with constant covariates. This is the layout
+`coxph()` uses for time-dependent covariates. A numeric `count` records
+an examination at `tstop`. An `NA` `count` records a covariate change
+only.
 
 ``` r
 cp <- data.frame(
@@ -83,10 +78,10 @@ pcd(cp$id, cp$tstart, cp$tstop, cp$count)
 #> [1] 1: (0.0, 0.5] 2 1: (0.5, 0.9] - 1: (0.9, 1.2] 0 2: (0.0, 0.8] 3
 ```
 
-Subject 1 was examined at 0.5 and 1.2 with two events in the first
-interval and none in the second; the dose changed at 0.9, part way
-through the second interval, which is exactly the information the rate
-model can use and the means model cannot.
+Subject 1 was examined at 0.5 and 1.2, with two events in the first
+interval and none in the second. The dose changed at 0.9, within the
+second interval. The rate model uses this information; the means model
+cannot.
 
 Within a subject the intervals must be contiguous, start at zero, and
 end at an examination.
@@ -95,11 +90,10 @@ all of this and says which subject is at fault when it fails.
 
 ### Converting data held in the older layout
 
-A common alternative layout repeats each panel count on every row of its
-interval and marks the examinations with a separate indicator. Turning
-that into the layout above takes one line, because a repeated count on a
-non-examination row carries no information that the count on the
-examination row does not:
+An older layout repeats each panel count on every row of its interval
+and marks examinations with a separate indicator. Convert it in one
+line. A repeated count on a non-examination row carries no information
+beyond the examination row:
 
 ``` r
 new <- old
@@ -111,7 +105,7 @@ pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
 
 ``` r
 set.seed(1)
-d <- r_panel_count(200, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+d <- sim_pcd(200, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
 #> 
@@ -135,11 +129,11 @@ a rescaling of $\Lambda$, so
 and reports the baseline separately.
 
 Fitting maximises the likelihood implied by a nonhomogeneous Poisson
-process, using an EM algorithm that treats the unobserved per-time
-counts as missing data. That makes the awkward integral
-$\int\exp\left( \beta\prime X(t) \right)d\Lambda(t)$ tractable and,
-usefully, means the covariates are only ever needed at the observed
-examination times rather than as complete trajectories.
+process. The EM algorithm treats the unobserved per-time counts as
+missing data. This makes the integral
+$\int\exp\left( \beta\prime X(t) \right)d\Lambda(t)$ tractable and
+requires covariates only at observed examination times, not as complete
+trajectories.
 
 The Poisson likelihood is a working device, not an assumption about the
 data. The estimator stays consistent and asymptotically normal when the
@@ -147,7 +141,7 @@ counts are not Poisson at all.
 
 ## Which standard errors
 
-That distinction matters most for the covariance. Three estimators are
+This distinction matters for the covariance. Three estimators are
 available.
 
 ``` r
@@ -172,18 +166,18 @@ fit$S
 #> x2 -0.2345604  0.8300369
 ```
 
-both of which are by-products of the last EM iteration, so the robust
-standard errors are essentially free. It is consistent whether or not
-the counts are Poisson.
+Both matrices are by-products of the last EM iteration, so the robust
+standard errors are essentially free. The estimator is consistent
+whether or not the counts are Poisson.
 
-`"information"` is $S^{- 1}/n$. Under the Poisson assumption $S$ is the
-efficient information and this is the right answer; it is also a cheap
-stand-in for the profile likelihood method, which it agrees with
+`"information"` is $S^{- 1}/n$. Under the Poisson assumption, $S$ is the
+efficient information and this is the right answer. It is also a cheap
+stand-in for the profile likelihood method, with which it agrees
 closely.
 
 `"profile"` is the numerical profile likelihood estimator of Murphy and
-van der Vaart. It is included for comparison with the literature, and
-because it is expensive it is computed only on request:
+van der Vaart. It is included for comparison with the literature and is
+computed only on request because it is expensive:
 
 ``` r
 pfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
@@ -195,24 +189,22 @@ rbind(information = sqrt(diag(vcov(pfit, "information"))),
 #> profile     0.08034997 0.07755357
 ```
 
-The two track each other closely, as the theory says they should, since
-both estimate $S$. They are not identical: the profile version rests on
-a numerical derivative with a step of order $n^{- 1/2}$, so it carries a
-discretisation error that shrinks only as the sample grows. That is the
-practical argument for preferring `"information"` whenever the Poisson
-assumption is tenable, and it is why `"profile"` is here mainly so that
-results can be compared with the literature.
+The two estimates track each other closely, as theory predicts, because
+both estimate $S$. They differ because the profile version uses a
+numerical derivative with a step of order $n^{- 1/2}$ and therefore has
+a discretisation error that shrinks only with sample size. Prefer
+`"information"` when the Poisson assumption is tenable. `"profile"` is
+mainly provided for comparison with the literature.
 
 ### What happens when the Poisson assumption fails
 
 Real recurrent event data are usually overdispersed: some subjects are
-simply more event-prone than their covariates suggest. Simulating that
-with a gamma frailty leaves the rate model intact but destroys the
-Poisson structure.
+more event-prone than their covariates suggest. A gamma frailty
+preserves the rate model but destroys the Poisson structure.
 
 ``` r
 set.seed(2)
-od <- r_panel_count(200, beta = c(1, -1), frailty = 1)
+od <- sim_pcd(200, beta = c(1, -1), frailty = 1)
 odfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
 rbind(robust = sqrt(diag(vcov(odfit, "robust"))),
       information = sqrt(diag(vcov(odfit, "information"))))
@@ -222,9 +214,9 @@ rbind(robust = sqrt(diag(vcov(odfit, "robust"))),
 ```
 
 The information-based standard errors are several times too small. The
-simulations in the paper put the resulting coverage of nominal 95%
-intervals around 15–22%. This is the reason `"robust"` is the default,
-and the reason to think hard before reporting anything else.
+paper’s simulations put coverage of the resulting nominal 95% intervals
+around 15–22%. For this reason, `"robust"` is the default and other
+choices require care.
 
 ## The baseline and predicted means
 
@@ -233,15 +225,20 @@ returns the estimated jumps and the cumulative baseline rate.
 
 ``` r
 head(baseline(fit))
-#>   time         jump   cumrate
-#> 1 0.01 1.207759e-01 0.1207759
-#> 2 0.02 0.000000e+00 0.1207759
-#> 3 0.03 0.000000e+00 0.1207759
-#> 4 0.04 1.355770e-46 0.1207759
-#> 5 0.05 4.659539e-01 0.5867298
-#> 6 0.06 0.000000e+00 0.5867298
-plot(fit)
-lines(fit$baseline$time, 8 * log(1 + fit$baseline$time), col = 2, lty = 2)
+#> # A tibble: 6 × 3
+#>    time     jump cumrate
+#>   <dbl>    <dbl>   <dbl>
+#> 1  0.01 1.21e- 1   0.121
+#> 2  0.02 0          0.121
+#> 3  0.03 0          0.121
+#> 4  0.04 1.36e-46   0.121
+#> 5  0.05 4.66e- 1   0.587
+#> 6  0.06 0          0.587
+
+truth <- data.frame(time = fit$baseline$time,
+                    value = 8 * log(1 + fit$baseline$time))
+autoplot(fit) +
+  ggplot2::geom_line(data = truth, colour = "#c0392b", linetype = 2)
 ```
 
 ![Estimated cumulative baseline rate rising with time, with the true
@@ -256,24 +253,82 @@ $E\left\lbrack N(t) \mid X \right\rbrack = \int_{0}^{t}\exp\left( \beta\prime X(
 ``` r
 pred <- predict(fit, d, type = "mean")
 head(pred)
-#>   id time      mean
-#> 1  1 0.01 0.1554798
-#> 2  1 0.02 0.1554798
-#> 3  1 0.03 0.1554798
-#> 4  1 0.04 0.1554798
-#> 5  1 0.05 0.7553213
-#> 6  1 0.06 0.7553213
+#> # A tibble: 6 × 3
+#>   id     time  mean
+#>   <chr> <dbl> <dbl>
+#> 1 1      0.01 0.155
+#> 2 1      0.02 0.155
+#> 3 1      0.03 0.155
+#> 4 1      0.04 0.155
+#> 5 1      0.05 0.755
+#> 6 1      0.06 0.755
 
 one <- pred[pred$id == 1, ]
-plot(one$time, one$mean, type = "s", xlab = "Time",
-     ylab = "Predicted mean count", main = "Subject 1")
+ggplot2::ggplot(one, ggplot2::aes(x = time, y = mean)) +
+  ggplot2::geom_step(colour = "#2a78d6", linewidth = 0.6) +
+  ggplot2::labs(x = "Time", y = "Predicted mean count", title = "Subject 1") +
+  ggplot2::theme_minimal(base_size = 11)
 ```
 
 ![Predicted mean count for one subject as a step function, rising
 monotonically over follow-up.](pcdreg_files/figure-html/predict-1.png)
 
-The curve is non-decreasing even though `x1` steps up or down part way
-through follow-up, which is the structural advantage of the rate model.
+The curve is non-decreasing even though `x1` changes part way through
+follow-up. This is a structural advantage of the rate model.
+
+## Tidy output
+
+[`tidy()`](https://generics.r-lib.org/reference/tidy.html),
+[`glance()`](https://generics.r-lib.org/reference/glance.html) and
+[`augment()`](https://generics.r-lib.org/reference/augment.html) methods
+are provided for the broom generics.
+
+``` r
+tidy(fit, conf.int = TRUE)
+#> # A tibble: 2 × 7
+#>   term  estimate std.error statistic  p.value conf.low conf.high
+#>   <chr>    <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+#> 1 x1        1.10    0.107       10.3 7.24e-25    0.892     1.31 
+#> 2 x2       -1.11    0.0938     -11.9 1.53e-32   -1.30     -0.931
+glance(fit)
+#> # A tibble: 1 × 8
+#>   model                         n nexam nevent ngrid logLik iterations converged
+#>   <chr>                     <int> <int>  <dbl> <int>  <dbl>      <dbl> <lgl>    
+#> 1 Proportional rate model …   200   819   1601   195 -1106.        522 TRUE
+```
+
+`exponentiate = TRUE` reports $e^{\beta}$, the multiplicative effect on
+the rate, read as a hazard ratio is read.
+
+``` r
+tidy(fit, conf.int = TRUE, exponentiate = TRUE)
+#> # A tibble: 2 × 7
+#>   term  estimate std.error statistic  p.value conf.low conf.high
+#>   <chr>    <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+#> 1 x1       3.01     0.107       10.3 7.24e-25    2.44      3.71 
+#> 2 x2       0.328    0.0938     -11.9 1.53e-32    0.273     0.394
+```
+
+[`augment()`](https://generics.r-lib.org/reference/augment.html)
+attaches the fitted mean to each row, together with the observed
+cumulative count and their difference. `.resid` is the excess of events
+seen so far over the number the model implies, so it is the quantity to
+plot against time or against a covariate when checking fit.
+
+``` r
+aug <- augment(fit)
+head(aug[!is.na(aug$.observed),
+         c("id", "tstop", ".fitted", ".observed", ".resid")])
+#> # A tibble: 6 × 5
+#>      id tstop .fitted .observed .resid
+#>   <int> <dbl>   <dbl>     <dbl>  <dbl>
+#> 1     1  0.38    3.39         1 -2.39 
+#> 2     1  1.07    7.25         4 -3.25 
+#> 3     1  1.7    10.2          8 -2.25 
+#> 4     2  0.21    2.33         2 -0.329
+#> 5     2  0.8     5.96         4 -1.96 
+#> 6     2  1.25    8.57         4 -4.57
+```
 
 ## The means model
 
@@ -282,9 +337,9 @@ through follow-up, which is the structural advantage of the rate model.
 $$E\left\lbrack N(t) \mid X(t) \right\rbrack = \mu(t)\exp\left( \beta\prime X(t) \right),$$
 
 by the estimating equation of Hu, Sun and Wei (2003). It is the
-comparator used in the application of the paper, and it is cheap: only
-the examination times enter, so none of the grid expansion the rate
-model needs is required.
+comparator in the paper’s application. It is inexpensive because only
+examination times enter; the grid expansion required by the rate model
+is unnecessary.
 
 ``` r
 mfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d, model = "mean")
@@ -309,7 +364,7 @@ There is no likelihood behind this estimator, so there is no log
 likelihood to report and [`vcov()`](https://rdrr.io/r/stats/vcov.html)
 offers only the sandwich.
 
-Two things are worth care when reading the two fits side by side.
+The two fits require care in interpretation.
 
 ``` r
 cbind(rate = coef(fit), mean = coef(mfit))
@@ -318,14 +373,13 @@ cbind(rate = coef(fit), mean = coef(mfit))
 #> x2 -1.114778 -1.0480179
 ```
 
-First, these numbers are not two estimates of one quantity. With
-time-varying covariates the models are not reparametrisations of each
-other: $\beta$ acts on the instantaneous rate in one and on the
-cumulative mean in the other, so they answer different questions and
-there is no reason for them to agree. The data here were generated from
-the rate model, which is why
+These numbers do not estimate one quantity. With time-varying
+covariates, the models are not reparametrisations of each other: $\beta$
+acts on the instantaneous rate in one and the cumulative mean in the
+other. They answer different questions and need not agree. These data
+were generated from the rate model, so
 [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) recovers
-the values used to simulate them and `pcdreg(model = "mean")` does not.
+the simulation values and `pcdreg(model = "mean")` does not.
 
 Second, nothing constrains the fitted $\widehat{\mu}$ to increase:
 
@@ -336,25 +390,24 @@ c(increasing = !is.unsorted(mu), decreases_at = sum(diff(mu) < 0))
 #>            0           96
 ```
 
-That is the difficulty with the means model this package’s rate model is
-meant to avoid, and it is visible here on ordinary simulated data rather
-than only in principle. A mean function that falls is not a numerical
-failure; it is what the estimator returns when covariate values move up
-and down, and it is why predicted means from `pcdreg(model = "mean")`
-can decrease while those from
+This is the difficulty that the package’s rate model addresses. It
+appears in ordinary simulated data. A declining mean function is not a
+numerical failure. It is the estimator’s result when covariate values
+move up and down. Predicted means from `pcdreg(model = "mean")` can
+therefore decrease, while those from
 [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) cannot.
 
 ## Computation
 
-The EM algorithm converges linearly and, on this problem, slowly: plain
-EM can still be moving in the fifth decimal place after tens of
-thousands of passes.
+The EM algorithm converges linearly and slowly on this problem: plain EM
+can still be changing in the fifth decimal place after tens of thousands
+of passes.
 [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md)
-therefore extrapolates the iterations using the SQUAREM scheme of
-Varadhan and Roland, keeping an extrapolated point only when a
-stabilising EM pass from it does at least as well on the observed data
-log likelihood. The fixed point is unchanged; only the number of passes
-needed to reach it falls, typically by an order of magnitude.
+extrapolates the iterations with the SQUAREM scheme of Varadhan and
+Roland. An extrapolated point is kept only if a stabilising EM pass from
+it does at least as well on the observed-data log likelihood. The fixed
+point is unchanged. The required number of passes typically falls by an
+order of magnitude.
 
 ``` r
 c(iterations = fit$iterations, EM_passes = fit$passes,
@@ -367,11 +420,10 @@ Set `accelerate = FALSE` in
 [`pcdreg_control()`](https://www.sundayu.me/pcdreg/reference/pcdreg_control.md)
 to recover plain EM.
 
-The dominant cost is the size of the pooled grid of distinct examination
-times, because the covariate trajectory of every subject has to be
-evaluated at every grid time within their follow-up. Examination times
-that tie across subjects, which is what scheduled visits produce in
-practice, keep that grid small.
+The dominant cost is the pooled grid of distinct examination times. The
+covariate trajectory for every subject is evaluated at every grid time
+within follow-up. Tied examination times across subjects, as with
+scheduled visits, keep the grid small.
 
 ## References
 

@@ -22,7 +22,7 @@
 #'   is realistic for scheduled visits and keeps the pooled grid, and hence the
 #'   cost of fitting, from growing quadratically in the sample size.
 #'
-#' @return A data frame in counting process form with columns `id`, `tstart`,
+#' @return A [tibble][tibble::tibble] in counting process form with columns `id`, `tstart`,
 #'   `tstop`, `count`, `x1` and `x2`. Rows are intervals over which the
 #'   covariates are constant; `count` is the number of events since the previous
 #'   examination and is `NA` on rows that only record a covariate change.
@@ -44,16 +44,15 @@
 #'
 #' @examples
 #' set.seed(42)
-#' d <- r_panel_count(5, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+#' d <- sim_pcd(5, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 #' head(d)
 #'
 #' # Overdispersed counts: the rate model still holds, the Poisson one does not.
-#' od <- r_panel_count(5, frailty = 1)
+#' od <- sim_pcd(5, frailty = 1)
 #' @export
-r_panel_count <- function(n, beta = c(1, -1),
-                          lambda = function(t) 8 / (1 + t), tau = 2,
-                          frailty = 0, exam_mean = 4, lambda_max = NULL,
-                          digits = 2) {
+sim_pcd <- function(n, beta = c(1, -1), lambda = function(t) 8 / (1 + t),
+                    tau = 2, frailty = 0, exam_mean = 4, lambda_max = NULL,
+                    digits = 2) {
   stopifnot(length(n) == 1L, n >= 1, length(beta) == 2L, is.function(lambda),
             length(tau) == 1L, tau > 0, length(frailty) == 1L, frailty >= 0,
             length(exam_mean) == 1L, exam_mean > 0, length(digits) == 1L)
@@ -61,15 +60,14 @@ r_panel_count <- function(n, beta = c(1, -1),
     lambda_max <- max(lambda(seq(0, tau, length.out = 10001L)))
   }
   if (!is.finite(lambda_max) || lambda_max <= 0) {
-    stop("`lambda` must be positive and finite on [0, tau].", call. = FALSE)
+    cli::cli_abort("{.arg lambda} must be positive and finite on [0, tau].",
+                   class = "pcdreg_error_lambda")
   }
 
   subjects <- lapply(seq_len(n), function(i) {
     one_subject(i, beta, lambda, tau, frailty, exam_mean, lambda_max, digits)
   })
-  out <- do.call(rbind, subjects)
-  rownames(out) <- NULL
-  out
+  tibble::as_tibble(do.call(rbind, subjects))
 }
 
 # One subject's worth of rows.

@@ -4,52 +4,51 @@
 library(pcdreg)
 ```
 
-This article is about choosing a tool, so it says what `pcdreg` does
-that the alternatives do not, and equally what they do that it does not.
+This article describes the settings in which `pcdreg` and the available
+alternatives apply.
 
 ## The landscape
 
-Three kinds of package meet recurrent event data in R, and they are not
+Three classes of R package address recurrent event data. They are not
 interchangeable.
 
 **Exactly observed event times.** If you know *when* each event
-happened, `reReg`, `survival` and the rest of the recurrent event
-literature apply, and none of what follows is relevant. Panel count data
-are the case where you know only how many events fell between visits.
+happened, `reReg`, `survival`, and the recurrent-event literature apply.
+The discussion below concerns panel count data, where only the number of
+events between visits is known.
 
 **`spef`**, by Chiou, Wang and Yan, is the established R package for
 panel count data. It offers a wide range of estimators through one
-function, `panelReg(formula, data, method = ...)`: augmented estimating
-equations that allow the observation process to be informative (`AEE`,
-`AEEX`), maximum pseudolikelihood and monotone spline likelihood methods
-(`MPL`, `MPLs`, `MLs`), the Sun–Wei and Hu–Sun–Wei estimating equations,
-and an accelerated mean model. Its response is
-`PanelSurv(ID, time, count)`, one row per examination. Every one of
-those methods targets the **mean** model. At the time of writing `spef`
-is archived on CRAN — since June 2026, for an undeliverable maintainer
+function, `panelReg(formula, data, method = ...)`. These include
+augmented estimating equations for an informative observation process
+(`AEE`, `AEEX`), maximum pseudolikelihood and monotone spline likelihood
+methods (`MPL`, `MPLs`, `MLs`), the Sun–Wei and Hu–Sun–Wei estimating
+equations, and an accelerated mean model. Its response is
+`PanelSurv(ID, time, count)`, one row per examination. All of these
+methods target the **mean** model. At the time of writing, `spef` is
+archived on CRAN — since June 2026, for an undeliverable maintainer
 address rather than anything to do with the code — so it installs from
 the archive rather than from
 [`install.packages()`](https://rdrr.io/r/utils/install.packages.html).
 
-**`pcdreg`** fits the rate model and the mean model, with covariates
-that may vary over time, and estimates the covariance without leaning on
-a Poisson assumption.
+**`pcdreg`** fits the rate and mean models with time-varying covariates.
+Its covariance estimate does not rely on a Poisson assumption.
 
 ## What is actually different
 
 ### The rate model
 
-This is the substantive difference. The means model constrains the
-*cumulative* count; the rate model constrains the *instantaneous* one.
-With covariates that move over time these are different models, not two
-parametrisations of one, and means something different in each.
+This is the substantive distinction. The means model constrains the
+*cumulative* count; the rate model constrains the *instantaneous* count.
+With time-varying covariates, these are different models. They are not
+two parametrisations of one, and has a different meaning in each.
 
 Simulate from the rate model with a covariate that steps part way
 through follow-up, and fit both:
 
 ``` r
 set.seed(1)
-d <- r_panel_count(300, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+d <- sim_pcd(300, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 
 rate <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 mean <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
@@ -67,15 +66,15 @@ quantity. If your scientific question is about the instantaneous risk —
 the analogue of a hazard ratio — then only the first column of estimates
 answers it, and a package offering mean models alone cannot produce it.
 
-The reverse holds too. If your question is about the cumulative burden
-by time , the means model is the right one, and `pcdreg(model = "mean")`
-and `spef`’s `EE.HSWc` are the same estimator.
+If the question concerns cumulative burden by time , the means model is
+appropriate. `pcdreg(model = "mean")` and `spef`’s `EE.HSWc` are the
+same estimator.
 
 ### Monotonicity
 
-There is a second, more practical consequence. Nothing constrains a
-fitted mean function to increase, and with a fluctuating covariate it
-generally does not:
+There is a practical consequence. Nothing constrains a fitted mean
+function to increase, and with a fluctuating covariate it generally does
+not:
 
 ``` r
 mu <- baseline(mean)$mean
@@ -96,45 +95,44 @@ all(vapply(split(pr$mean, pr$id), function(v) all(diff(v) >= 0), logical(1)))
 #> [1] TRUE
 ```
 
-Some `spef` methods address this from the other side, fitting with
-monotone I-splines so the *baseline* increases by construction. That is
-a real solution to half the problem: it does not stop the fitted mean
-for a given subject from falling when their covariates fall.
+Some `spef` methods fit with monotone I-splines, so the *baseline*
+increases by construction. This resolves half the problem. The fitted
+mean for a subject can still decline when their covariates decline.
 
 ### Covariates between examinations
 
-The rate model’s likelihood evaluates each subject’s covariate
-trajectory at every pooled examination time inside their follow-up,
-including times at which *that* subject was not examined. A response of
-the form `PanelSurv(ID, time, count)`, with one row per examination, has
-nowhere to put a covariate value at a time when the subject was not
-seen. [`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md)’s
-counting process form does:
+The rate-model likelihood evaluates each subject’s covariate trajectory
+at every pooled examination time during follow-up, including times at
+which *that* subject was not examined. A `PanelSurv(ID, time, count)`
+response has one row per examination and cannot record a covariate value
+when the subject was not seen. The counting-process form of
+[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md) can:
 
 ``` r
 head(subset(d, id == 1), 4)
-#>   id   tstart    tstop count        x1        x2
-#> 1  1 0.000000 0.380000     1 0.8983897 0.6607978
-#> 2  1 0.380000 1.070000     3 0.8983897 0.6607978
-#> 3  1 1.070000 1.258228    NA 0.8983897 0.6607978
-#> 4  1 1.258228 1.700000     4 0.9446753 0.6607978
+#> # A tibble: 4 × 6
+#>      id tstart tstop count    x1    x2
+#>   <int>  <dbl> <dbl> <dbl> <dbl> <dbl>
+#> 1     1   0     0.38     1 0.898 0.661
+#> 2     1   0.38  1.07     3 0.898 0.661
+#> 3     1   1.07  1.26    NA 0.898 0.661
+#> 4     1   1.26  1.7      4 0.945 0.661
 ```
 
-Row 3 here has `count = NA`: it records that a covariate changed at that
-time, not an examination. That is the information the rate model needs
-and the one row per examination layout cannot carry.
+Row 3 has `count = NA`, recording a covariate change at that time, not
+an examination. The rate model needs this information. The
+one-row-per-examination layout cannot carry it.
 
 ### Variance without the Poisson assumption
 
-The rate model’s likelihood is the one a Poisson process would give,
-which is a working device rather than a claim about the data. Recurrent
-event data are usually overdispersed, and then the standard errors that
-assume Poisson counts are far too small. `pcdreg` reports a robust
-sandwich by default and will show you the difference:
+The rate-model likelihood is the likelihood of a Poisson process. It is
+a working device, not a claim about the data. Recurrent event data are
+usually overdispersed, so standard errors that assume Poisson counts are
+far too small. `pcdreg` reports a robust sandwich by default:
 
 ``` r
 set.seed(2)
-od <- r_panel_count(300, beta = c(1, -1), frailty = 1)  # gamma frailty
+od <- sim_pcd(300, beta = c(1, -1), frailty = 1)  # gamma frailty
 odfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
 
 round(rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
@@ -144,14 +142,13 @@ round(rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
 #> information 0.0335 0.0295
 ```
 
-The simulations in the paper put the coverage of nominal 95% intervals
-built from the second row at 15–22%. Both are available here, and the
-honest one is the default.
+The paper’s simulations put coverage of nominal 95% intervals built from
+the second row at 15–22%. Both estimators are available; the robust
+estimator is the default.
 
 ## Seeing the data first
 
-`pcdreg` also plots the observation pattern, which is worth a look
-before fitting anything:
+`pcdreg` also plots the observation pattern:
 
 ``` r
 plot(with(d, pcd(id, tstart, tstop, count)), max_subjects = 40)
@@ -163,11 +160,10 @@ line, filled circles at examinations with area proportional to the event
 count and open circles where no events were
 recorded.](comparison_files/figure-html/dataplot-1.png)
 
-Two things visible here decide how the analysis will go. Whether
-examination times line up across subjects sets the size of the pooled
-grid and so the cost of fitting the rate model; and how ragged the right
-hand edge is tells you how much of the tail of the baseline rests on a
-handful of subjects.
+Two features of this plot affect the analysis. Alignment of examination
+times across subjects determines the pooled-grid size and the cost of
+fitting the rate model. The raggedness of the right edge shows how much
+of the baseline tail rests on a handful of subjects.
 
 ## Which to use
 
@@ -181,9 +177,9 @@ handful of subjects.
 | an accelerated mean model, or the other mean-model estimators | `spef`                            |
 | exactly observed event times                                  | not panel count data; see `reReg` |
 
-`pcdreg` is deliberately narrow. It implements two models carefully,
-with the covariance estimation worked out and tested, rather than many
-models at once. Where `spef` has an estimator you need, use it.
+`pcdreg` is deliberately narrow. It implements two models with
+covariance estimation worked out and tested. Use `spef` when it provides
+an estimator you need.
 
 ## Reference
 

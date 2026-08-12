@@ -29,7 +29,7 @@ cat(sprintf("cell %d | n = %d | poisson = %s | %d reps | %d cores | pcdreg %s\n"
             as.character(utils::packageVersion("pcdreg"))))
 
 one_rep <- function(i, n, frailty) {
-  d <- pcdreg::r_panel_count(n, beta = c(1, -1),
+  d <- pcdreg::sim_pcd(n, beta = c(1, -1),
                              lambda = function(t) 8 / (1 + t),
                              frailty = frailty)
   fit <- try(suppressWarnings(

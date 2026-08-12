@@ -37,6 +37,23 @@ test_that("malformed input is rejected with a specific message", {
   expect_error(pcd(1:2, c(1, Inf), c(0, 2)), "finite")
 })
 
+# The conditions carry classes so that callers can catch a particular failure
+# rather than matching on message text, which is free to change.
+test_that("validation failures carry condition classes", {
+  expect_error(pcd(1:2, 1:2, 1:3), class = "pcdreg_error_length")
+  expect_error(pcd(1:2, c(1, 1), c(-1, 2)), class = "pcdreg_error_count")
+  expect_error(pcd(1:2, c(1, 1), c(NA, NA)), class = "pcdreg_error_no_exam")
+  expect_error(pcd(c(1, NA), c(1, 1), c(0, 2)),
+               class = "pcdreg_error_missing_id")
+  expect_error(pcd(1:2, c(1, 1), c(0.5, 2), c(1, 2)),
+               class = "pcdreg_error_interval")
+  expect_error(pcd(1:2, c(1, Inf), c(0, 2)), class = "pcdreg_error_time")
+
+  bad <- data.frame(id = 1, tstart = 0.2, tstop = 1, count = 3, x = 1)
+  expect_error(pcdreg(pcd(id, tstart, tstop, count) ~ x, data = bad),
+               class = "pcdreg_error_origin")
+})
+
 test_that("subsetting preserves the class and the labels", {
   y <- pcd(c("a", "a", "b"), c(0.5, 1, 2), c(1, 2, 3))
   sub <- y[c(1, 3), ]
@@ -60,7 +77,7 @@ test_that("is.pcd discriminates", {
 test_that("the data plot is a ggplot with one tile per examination interval", {
   skip_if_not_installed("ggplot2")
   set.seed(1)
-  d <- r_panel_count(30)
+  d <- sim_pcd(30)
   y <- with(d, pcd(id, tstart, tstop, count))
 
   p <- autoplot(y)
@@ -77,8 +94,17 @@ test_that("the data plot is a ggplot with one tile per examination interval", {
   }
   expect_error(autoplot(y, order_by = "nonsense"))
 
-  # plot() is the same picture, so it stays usable from a script.
-  expect_s3_class(plot(y), "ggplot")
+  # plot() draws the same picture as a side effect and hands the object back
+  # invisibly, so it works from a script rather than only at the console.
+  drawn <- tempfile(fileext = ".pdf")
+  grDevices::pdf(drawn)
+  on.exit({
+    if (grDevices::dev.cur() > 1L) grDevices::dev.off()
+    unlink(drawn)
+  }, add = TRUE)
+  res <- withVisible(plot(y))
+  expect_false(res$visible)
+  expect_s3_class(res$value, "ggplot")
 
   # It renders without warnings about missing or dropped values.
   f <- tempfile(fileext = ".png")
@@ -90,11 +116,11 @@ test_that("the data plot is a ggplot with one tile per examination interval", {
 test_that("large studies are thinned and identifiers survive", {
   skip_if_not_installed("ggplot2")
   set.seed(2)
-  big <- with(r_panel_count(80), pcd(id, tstart, tstop, count))
+  big <- with(sim_pcd(80), pcd(id, tstart, tstop, count))
   expect_message(p <- autoplot(big, max_subjects = 20), "20 of 80")
   expect_equal(length(unique(p$data$y)), 20L)
 
-  d <- r_panel_count(20)
+  d <- sim_pcd(20)
   d$id <- paste0("s", d$id)
   expect_s3_class(autoplot(with(d, pcd(id, tstart, tstop, count))), "ggplot")
 })
@@ -102,7 +128,7 @@ test_that("large studies are thinned and identifiers survive", {
 test_that("the baseline plot is a ggplot for both models", {
   skip_if_not_installed("ggplot2")
   set.seed(3)
-  d <- r_panel_count(40)
+  d <- sim_pcd(40)
   for (mod in c("rate", "mean")) {
     fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
                   model = mod)

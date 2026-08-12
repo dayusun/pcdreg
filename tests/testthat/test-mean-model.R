@@ -1,6 +1,6 @@
 make_data <- function(n = 40, seed = 20240303, ...) {
   set.seed(seed)
-  r_panel_count(n, beta = c(1, -1), lambda = function(t) 8 / (1 + t), ...)
+  sim_pcd(n, beta = c(1, -1), lambda = function(t) 8 / (1 + t), ...)
 }
 
 fit_mean <- function(d, ...) {

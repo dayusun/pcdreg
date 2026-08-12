@@ -24,8 +24,8 @@ examination time within each subject's follow-up:
 }
 \value{
 For \code{type = "lp"}, a numeric vector with one element per row of
-\code{newdata}. For \code{type = "mean"}, a data frame with columns \code{id}, \code{time} and
-\code{mean}.
+\code{newdata}. For \code{type = "mean"}, a \link[tibble:tibble]{tibble} with columns
+\code{id}, \code{time} and \code{mean}.
 }
 \description{
 Predictions from a panel count model
@@ -39,7 +39,7 @@ practical drawback of that model with time-varying covariates.
 }
 \examples{
 set.seed(1)
-d <- r_panel_count(60, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+d <- sim_pcd(60, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 head(predict(fit))
 head(predict(fit, type = "mean"))

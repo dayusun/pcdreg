@@ -28,3 +28,20 @@
 * Both fitters return an object inheriting from `"pcdfit"`, so `coef()`,
   `vcov()`, `confint()`, `summary()`, `baseline()`, `predict()` and `plot()`
   work the same way for either.
+
+* `tidy()`, `glance()` and `augment()` methods are provided for the broom
+  generics. `tidy()` takes the same `type` argument as `vcov()`, so the tidy
+  path reports the same standard errors as `summary()`. `augment()` adds the
+  fitted mean, the observed cumulative count and their difference to each row.
+
+* `sim_pcd()` simulates from the design of the paper's simulation study.
+
+* `autoplot()` methods return `ggplot` objects for the data, drawn as one tile
+  per examination interval shaded by its count, and for the fitted baseline.
+  `plot()` draws them and returns the object invisibly.
+
+* `baseline()`, `predict(type = "mean")` and `sim_pcd()` return tibbles.
+
+* Errors, warnings and messages use cli and carry condition classes, so a
+  particular failure can be caught with `tryCatch()` rather than by matching on
+  message text.

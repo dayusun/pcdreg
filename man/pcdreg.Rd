@@ -123,7 +123,7 @@ situation, the latter two understate the standard errors, sometimes severely.
 
 \examples{
 set.seed(1)
-d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+d <- sim_pcd(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 
 fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
@@ -148,5 +148,5 @@ Murphy, S. A. and van der Vaart, A. W. (2000). On profile likelihood.
 \emph{Journal of the American Statistical Association} \strong{95}, 449--465.
 }
 \seealso{
-\code{\link[=pcd]{pcd()}}, \code{\link[=vcov.pcdfit]{vcov.pcdfit()}}, \code{\link[=baseline]{baseline()}}, \code{\link[=r_panel_count]{r_panel_count()}}
+\code{\link[=pcd]{pcd()}}, \code{\link[=vcov.pcdfit]{vcov.pcdfit()}}, \code{\link[=baseline]{baseline()}}, \code{\link[=sim_pcd]{sim_pcd()}}
 }

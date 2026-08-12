@@ -69,19 +69,18 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/dayusun/pcdreg" class="external-link">pcdreg</a></span><span class="op">)</span></span></code></pre></div>
-<p>Getting the data into the right shape is most of the work of fitting
-these models, and it is where the mistakes are. This vignette covers
-what the two fitters expect, how to say it in a formula, how to convert
-from the layouts data usually arrives in, and what each error message
-means.</p>
+<p>Data preparation is most of the work in fitting these models, and
+most mistakes occur here. This vignette describes the inputs required by
+the two fitters, formula specification, conversion from common layouts,
+and the error messages.</p>
 <div class="section level2">
 <h2 id="what-panel-count-data-is">What panel count data is<a class="anchor" aria-label="anchor" href="#what-panel-count-data-is"></a>
 </h2>
 <p>A subject is examined at times
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mrow><mi>i</mi><mn>1</mn></mrow></msub><mo>&lt;</mo><mi>…</mi><mo>&lt;</mo><msub><mi>T</mi><mrow><mi>i</mi><msub><mi>J</mi><mi>i</mi></msub></mrow></msub></mrow><annotation encoding="application/x-tex">T_{i1} &lt; \dots &lt; T_{iJ_i}</annotation></semantics></math>.
-At each examination you learn how many events have happened since the
-previous one, but not when any of them happened. Two quantities matter
-and are easy to confuse:</p>
+Each examination gives the number of events since the previous
+examination, but not their times. Two quantities are easy to
+confuse:</p>
 <ul>
 <li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><msub><mi>N</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\Delta N_{ij}</annotation></semantics></math>,
@@ -100,10 +99,10 @@ detect, and it will quietly give you the wrong answer.</p>
 <div class="section level2">
 <h2 id="the-response">The response<a class="anchor" aria-label="anchor" href="#the-response"></a>
 </h2>
-<p><code><a href="../reference/pcd.html">pcd()</a></code> builds the left hand side of the formula, in the
-same way <code>Surv()</code> does for survival models. It has two forms,
-and which you need depends on one question only: <strong>do any
-covariates change value during follow-up?</strong></p>
+<p><code><a href="../reference/pcd.html">pcd()</a></code> builds the left-hand side of the formula, as
+<code>Surv()</code> does for survival models. Choose its form according
+to one question: <strong>do any covariates change value during
+follow-up?</strong></p>
 <div class="section level3">
 <h3 id="no-time-varying-covariates-one-row-per-examination">No time-varying covariates: one row per examination<a class="anchor" aria-label="anchor" href="#no-time-varying-covariates-one-row-per-examination"></a>
 </h3>
@@ -119,26 +118,26 @@ covariates change value during follow-up?</strong></p>
 <span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">visits</span><span class="op">$</span><span class="va">id</span>, <span class="va">visits</span><span class="op">$</span><span class="va">time</span>, <span class="va">visits</span><span class="op">$</span><span class="va">count</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 1: (0.0, 0.5] 2 1: (0.5, 1.1] 0 1: (1.1, 1.9] 3 2: (0.0, 0.7] 1</span></span>
 <span><span class="co">#&gt; [5] 2: (0.7, 1.4] 4</span></span></code></pre></div>
-<p>Interval starts are filled in from each subject’s previous
-examination, with follow-up beginning at zero, which is what the printed
-intervals show. Subject 1 contributes
+<p>Interval starts come from each subject’s previous examination, with
+follow-up beginning at zero. The printed intervals show this. Subject 1
+contributes
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>0.5</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">(0, 0.5]</annotation></semantics></math>,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mn>0.5</mn><mo>,</mo><mn>1.1</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">(0.5, 1.1]</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mn>1.1</mn><mo>,</mo><mn>1.9</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">(1.1, 1.9]</annotation></semantics></math>
-with 2, 0 and 3 events. Fitting is then</p>
+with 2, 0 and 3 events. Fit the model with</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">time</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">arm</span>, data <span class="op">=</span> <span class="va">visits</span><span class="op">)</span></span></code></pre></div>
-<p>though not on five rows and two subjects: <code>age</code> and
-<code>arm</code> are perfectly confounded there, and the information
-matrix is singular. Real fits appear later in this vignette.</p>
+<p>but not with these five rows and two subjects: <code>age</code> and
+<code>arm</code> are perfectly confounded, so the information matrix is
+singular. Later examples use real fits.</p>
 </div>
 <div class="section level3">
 <h3 id="time-varying-covariates-counting-process-rows">Time-varying covariates: counting process rows<a class="anchor" aria-label="anchor" href="#time-varying-covariates-counting-process-rows"></a>
 </h3>
-<p>When a covariate changes between examinations, you need a row for
-each stretch over which the covariates are constant. This is exactly the
-layout <code>coxph()</code> uses for time-dependent covariates.</p>
+<p>When a covariate changes between examinations, use one row for each
+interval with constant covariates. This is the layout
+<code>coxph()</code> uses for time-dependent covariates.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  id     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
@@ -150,11 +149,10 @@ layout <code>coxph()</code> uses for time-dependent covariates.</p>
 <span></span>
 <span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">cp</span><span class="op">$</span><span class="va">id</span>, <span class="va">cp</span><span class="op">$</span><span class="va">tstart</span>, <span class="va">cp</span><span class="op">$</span><span class="va">tstop</span>, <span class="va">cp</span><span class="op">$</span><span class="va">count</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 1: (0.0, 0.5] 2 1: (0.5, 0.9] - 1: (0.9, 1.2] 0 2: (0.0, 0.8] 3</span></span></code></pre></div>
-<p>Read it as: subject 1 was examined at 0.5 with 2 events and at 1.2
-with none, and their dose changed from 10 to 25 at time 0.9, part way
-through the second examination interval.</p>
-<p>The rule for <code>count</code> is what distinguishes the two kinds
-of row:</p>
+<p>Subject 1 was examined at 0.5 with 2 events and at 1.2 with none. The
+dose changed from 10 to 25 at time 0.9, within the second examination
+interval.</p>
+<p>The <code>count</code> field distinguishes the two row types:</p>
 <ul>
 <li>a <strong>number</strong> means “this row ends at an examination,
 and this many events happened since the previous examination”;</li>
@@ -162,23 +160,21 @@ and this many events happened since the previous examination”;</li>
 <strong><code>NA</code></strong> means “this row ends at a covariate
 change, not an examination”.</li>
 </ul>
-<p>That is the whole convention. There is no separate event
-indicator.</p>
+<p>There is no separate event indicator.</p>
 </div>
 <div class="section level3">
 <h3 id="which-form-in-one-line">Which form, in one line<a class="anchor" aria-label="anchor" href="#which-form-in-one-line"></a>
 </h3>
 <p>Use the three argument form when every covariate is fixed at
-baseline. Use the four argument form as soon as one covariate moves. If
-in doubt use the four argument form: it can express anything the three
-argument form can.</p>
+baseline. Use the four argument form as soon as a covariate changes.
+When in doubt, use the four argument form. It can express anything the
+three argument form can.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="the-formula">The formula<a class="anchor" aria-label="anchor" href="#the-formula"></a>
 </h2>
-<p>The right hand side is an ordinary model formula, so the usual things
-work.</p>
+<p>The right-hand side is an ordinary model formula.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>          <span class="co"># main effects</span></span>
 <span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">*</span> <span class="va">x2</span>          <span class="co"># interaction</span></span>
@@ -189,13 +185,13 @@ work.</p>
 <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> reuses the coding the fit used.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/r_panel_count.html">r_panel_count</a></span><span class="op">(</span><span class="fl">60</span><span class="op">)</span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_pcd.html">sim_pcd</a></span><span class="op">(</span><span class="fl">60</span><span class="op">)</span></span>
 <span><span class="va">d</span><span class="op">$</span><span class="va">site</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"north"</span>, <span class="st">"south"</span>, <span class="st">"east"</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span> <span class="op">+</span> <span class="va">d</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">3</span><span class="op">]</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">site</span>, data <span class="op">=</span> <span class="va">d</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "x1"        "sitenorth" "sitesouth"</span></span></code></pre></div>
-<p>The dot expands to every column that is not part of the response, so
+<p>The dot expands to every column outside the response, so
 <code>id</code>, <code>tstart</code>, <code>tstop</code> and
 <code>count</code> are excluded automatically:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -209,22 +205,21 @@ baseline function, so both fitters drop the intercept and report the
 baseline separately through <code><a href="../reference/baseline.html">baseline()</a></code>. Writing
 <code>~ x1 + x2 - 1</code> changes nothing, and adding <code>+ 0</code>
 is unnecessary.</p>
-<p>One consequence worth knowing: adding a constant
+<p>Adding a constant
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
 to a covariate leaves
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>β</mi><annotation encoding="application/x-tex">\beta</annotation></semantics></math>
-untouched and rescales the baseline by
+unchanged and rescales the baseline by
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>e</mi><mrow><mo>−</mo><mi>c</mi><mi>β</mi></mrow></msup><annotation encoding="application/x-tex">e^{-c\beta}</annotation></semantics></math>.
-Centring your covariates changes the baseline, not the coefficients.</p>
+Centring covariates changes the baseline, not the coefficients.</p>
 </div>
 <div class="section level3">
 <h3 id="row-order-does-not-matter">Row order does not matter<a class="anchor" aria-label="anchor" href="#row-order-does-not-matter"></a>
 </h3>
-<p>The data are sorted internally by subject and time, so you do not
-need to <code>arrange()</code> first. Nor do subject identifiers need to
-be integers or consecutive: numbers, characters and factors all work,
-and the original labels come back in
-<code>predict(type = "mean")</code>.</p>
+<p>Data are sorted internally by subject and time, so
+<code>arrange()</code> is unnecessary. Subject identifiers need not be
+integers or consecutive. Numbers, characters, and factors all work;
+<code>predict(type = "mean")</code> returns the original labels.</p>
 </div>
 </div>
 <div class="section level2">
@@ -233,9 +228,8 @@ and the original labels come back in
 <div class="section level3">
 <h3 id="cumulative-counts">Cumulative counts<a class="anchor" aria-label="anchor" href="#cumulative-counts"></a>
 </h3>
-<p>The most common and most damaging mismatch. If your
-<code>count</code> column accumulates, difference it within subject
-before fitting.</p>
+<p>This is the most common and damaging mismatch. If <code>count</code>
+accumulates, difference it within subject before fitting.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># A frame whose counts accumulate: 2, 2, 5 rather than 2, 0, 3.</span></span>
 <span><span class="va">cumdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -254,9 +248,8 @@ before fitting.</p>
 <span><span class="co">#&gt; 3  1  1.9     5         3</span></span>
 <span><span class="co">#&gt; 4  2  0.7     1         1</span></span>
 <span><span class="co">#&gt; 5  2  1.4     5         4</span></span></code></pre></div>
-<p>Then fit with <code>increment</code>. With <code>NA</code>s present
-for covariate-change rows, do the differencing on the examination rows
-alone:</p>
+<p>Then fit with <code>increment</code>. With <code>NA</code>s on
+covariate-change rows, difference only the examination rows:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">at</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">count</span><span class="op">)</span></span>
 <span><span class="va">dat</span><span class="op">$</span><span class="va">count</span><span class="op">[</span><span class="va">at</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/ave.html" class="external-link">ave</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">count</span><span class="op">[</span><span class="va">at</span><span class="op">]</span>, <span class="va">dat</span><span class="op">$</span><span class="va">id</span><span class="op">[</span><span class="va">at</span><span class="op">]</span>,</span>
@@ -265,10 +258,10 @@ alone:</p>
 <div class="section level3">
 <h3 id="data-held-in-the-older-panelem-layout">Data held in the older <code>panelEM</code> layout<a class="anchor" aria-label="anchor" href="#data-held-in-the-older-panelem-layout"></a>
 </h3>
-<p>That layout repeated each panel count on every row of its interval
-and marked examinations with a separate indicator. A repeated count
-carries nothing the count on the examination row does not, so the
-conversion is one line:</p>
+<p>This layout repeats each panel count on every row of its interval and
+marks examinations with a separate indicator. A repeated count carries
+no information beyond the examination row, so conversion takes one
+line:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">new</span> <span class="op">&lt;-</span> <span class="va">old</span></span>
 <span><span class="va">new</span><span class="op">$</span><span class="va">count</span><span class="op">[</span><span class="va">old</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">0</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
@@ -277,9 +270,9 @@ conversion is one line:</p>
 <div class="section level3">
 <h3 id="examinations-and-covariate-histories-in-separate-tables">Examinations and covariate histories in separate tables<a class="anchor" aria-label="anchor" href="#examinations-and-covariate-histories-in-separate-tables"></a>
 </h3>
-<p>If visits and covariate changes live in different tables, stack them
-and carry the covariates forward. The examination rows keep their
-counts; the covariate change rows get <code>NA</code>.</p>
+<p>If visits and covariate changes are in separate tables, stack them
+and carry covariates forward. Examination rows retain their counts;
+covariate-change rows receive <code>NA</code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">exams</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1.2</span><span class="op">)</span>, count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">covar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span>, time <span class="op">=</span> <span class="fl">0.9</span>, dose <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span>
@@ -306,25 +299,27 @@ counts; the covariate change rows get <code>NA</code>.</p>
 <div class="section level3">
 <h3 id="one-row-per-subject-several-visit-columns">One row per subject, several visit columns<a class="anchor" aria-label="anchor" href="#one-row-per-subject-several-visit-columns"></a>
 </h3>
-<p>Wide data needs reshaping to long first;
-<code><a href="https://rdrr.io/r/stats/reshape.html" class="external-link">stats::reshape()</a></code> or <code><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">tidyr::pivot_longer()</a></code> both
-do it. Aim for one row per subject and visit, then use the three
-argument form.</p>
+<p>Reshape wide data to long first with <code><a href="https://rdrr.io/r/stats/reshape.html" class="external-link">stats::reshape()</a></code> or
+<code><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">tidyr::pivot_longer()</a></code>. Use one row per subject and visit,
+then the three argument form.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="what-the-data-must-satisfy">What the data must satisfy<a class="anchor" aria-label="anchor" href="#what-the-data-must-satisfy"></a>
 </h2>
-<p>Both fitters check these before doing any arithmetic, and name the
+<p>Both fitters perform these checks before arithmetic and identify the
 offending subject when a check fails.</p>
 <p><strong>Follow-up starts at zero.</strong> The models integrate from
 0, so the first interval of every subject must begin there.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bad</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span>, tstart <span class="op">=</span> <span class="fl">0.2</span>, tstop <span class="op">=</span> <span class="fl">1</span>, count <span class="op">=</span> <span class="fl">3</span>, x <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">bad</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: Follow-up must start at time 0, but subject 1 starts at 0.2. Shift the time scale so that 0 is the start of follow-up.</span></span></code></pre></div>
-<p>If your times are calendar dates, or follow-up starts at enrolment,
-subtract each subject’s own origin first.</p>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `prepare_panel()`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> Follow-up must start at time 0.</span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> Subject <span style="color: #0000BB;">"1"</span> starts at 0.2.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Shift the time scale so that 0 is the start of follow-up.</span></span></code></pre></div>
+<p>For calendar dates, or follow-up starting at enrolment, subtract each
+subject’s own origin first.</p>
 <p><strong>Intervals are contiguous.</strong> Within a subject each
 interval must begin exactly where the previous one ended: no gaps, no
 overlaps.</p>
@@ -332,32 +327,36 @@ overlaps.</p>
 <code class="sourceCode R"><span><span class="va">bad</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, tstart <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.7</span><span class="op">)</span>, tstop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>                  count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">bad</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: Intervals within a subject must be contiguous, but subject 1 has a gap or overlap at time 0.7.</span></span></code></pre></div>
-<p>A gap usually means a covariate history that does not cover the whole
-of follow-up. Carry the last value forward rather than leaving the
-stretch out.</p>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `prepare_panel()`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> Intervals within a subject must be contiguous.</span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> Subject <span style="color: #0000BB;">"1"</span> has a gap or overlap at time 0.7.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Carry the last covariate value forward rather than leaving the stretch out.</span></span></code></pre></div>
+<p>A gap usually indicates a covariate history that does not cover all
+follow-up. Carry the last value forward instead of omitting the
+interval.</p>
 <p><strong>Every subject has at least one examination.</strong> A
-subject whose <code>count</code> is <code>NA</code> on every row
-contributes nothing and is more likely a data error than an
-intention.</p>
+subject with <code>count</code> equal to <code>NA</code> on every row
+contributes nothing and is more likely a data error than an intentional
+record.</p>
 <p><strong>Counts are non-negative whole numbers.</strong>
-<code><a href="../reference/pcd.html">pcd()</a></code> refuses anything else, which catches rates and
-averages passed by mistake.</p>
+<code><a href="../reference/pcd.html">pcd()</a></code> refuses other values. This catches rates and averages
+passed by mistake.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1.2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: `count` must be a non-negative whole number at examination times.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `pcd()`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `count` must be a non-negative whole number at examination times.</span></span></code></pre></div>
 <p><strong>One row per subject may end at any given time.</strong>
-Duplicate rows for the same subject and time are rejected rather than
+Duplicate rows at the same subject and time are rejected instead of
 silently combined.</p>
 <div class="section level3">
 <h3 id="what-gets-dropped">What gets dropped<a class="anchor" aria-label="anchor" href="#what-gets-dropped"></a>
 </h3>
-<p>Follow-up ends at a subject’s last examination: the likelihood runs
+<p>Follow-up ends at a subject’s last examination. The likelihood runs
 over
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>J</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">j = 1, \dots, J_i</annotation></semantics></math>
-and knows nothing beyond
+and has no information beyond
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>i</mi><msub><mi>J</mi><mi>i</mi></msub></mrow></msub><annotation encoding="application/x-tex">T_{iJ_i}</annotation></semantics></math>.
-Rows lying entirely after it are dropped, with a message saying how
+Rows wholly after that time are dropped, with a message reporting how
 many.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># A censoring row appended after subject 1's final visit.</span></span>
@@ -367,10 +366,9 @@ many.</p>
 <span></span>
 <span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>,</span>
 <span>                  data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">trailing</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Dropping 1 row(s) beyond the last examination of their subject.</span></span></code></pre></div>
-<p>If that message surprises you, the usual cause is a censoring row
-appended after the last visit. It is harmless: no information is lost,
-because there was none in that stretch to begin with.</p>
+<span><span class="co">#&gt; Dropping 1 row beyond the last examination of their subject.</span></span></code></pre></div>
+<p>The usual cause is a censoring row appended after the last visit.
+This is harmless: the interval contains no information.</p>
 </div>
 <div class="section level3">
 <h3 id="missing-values">Missing values<a class="anchor" aria-label="anchor" href="#missing-values"></a>
@@ -385,35 +383,32 @@ values forward or by dropping whole subjects.</p>
 <div class="section level2">
 <h2 id="what-the-package-does-with-your-rows">What the package does with your rows<a class="anchor" aria-label="anchor" href="#what-the-package-does-with-your-rows"></a>
 </h2>
-<p>Knowing this makes the error messages obvious.</p>
+<p>This processing explains the error messages.</p>
 <p>The pooled grid
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mn>1</mn></msub><mo>&lt;</mo><mi>…</mi><mo>&lt;</mo><msub><mi>t</mi><mi>K</mi></msub></mrow><annotation encoding="application/x-tex">t_1 &lt; \dots &lt; t_K</annotation></semantics></math>
-is the set of all distinct examination times across all subjects. For
-the <strong>rate model</strong>, each subject’s covariate trajectory is
-evaluated at every grid time inside their follow-up, which is why the
-whole trajectory must be present and contiguous. For the <strong>means
-model</strong> only the subject’s own examination times are used, so it
-is much cheaper.</p>
+contains all distinct examination times. For the <strong>rate
+model</strong>, each subject’s covariate trajectory is evaluated at each
+grid time during follow-up. The complete, contiguous trajectory is
+therefore required. The <strong>means model</strong> uses only each
+subject’s examination times and is much cheaper.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>subjects <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">n</span>, examinations <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">nexam</span>,</span>
 <span>  grid_times <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">ngrid</span>, events <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">nevent</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     subjects examinations   grid_times       events </span></span>
 <span><span class="co">#&gt;           60          235          139          487</span></span></code></pre></div>
-<p>Ties across subjects shrink the grid, and the grid drives the cost of
-the rate model. Examination times recorded to the day or the week tie
-naturally; times carried at full numerical precision never do, and the
-grid then grows with the sample size. Rounding to the precision the
-visits were actually scheduled at is worth doing.</p>
+<p>Ties across subjects reduce the grid, which drives the rate model’s
+cost. Examination times recorded to the day or week tie naturally. Times
+kept at full numerical precision do not, so the grid grows with sample
+size. Round to the precision at which visits were scheduled.</p>
 </div>
 <div class="section level2">
 <h2 id="checking-before-you-fit">Checking before you fit<a class="anchor" aria-label="anchor" href="#checking-before-you-fit"></a>
 </h2>
-<p>The quantities above are the quickest sanity check:
-<code>nexam</code> should match the number of examinations you think you
-have, and <code>nevent</code> the total number of events. If
-<code>nevent</code> is far larger than expected, the usual explanation
-is cumulative counts.</p>
+<p>These quantities are a quick sanity check. <code>nexam</code> should
+equal the expected number of examinations, and <code>nevent</code> the
+total number of events. An unexpectedly large <code>nevent</code>
+usually indicates cumulative counts.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>rows_supplied <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span>,</span>
 <span>  examination_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">count</span><span class="op">)</span><span class="op">)</span>,</span>

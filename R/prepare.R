@@ -29,26 +29,36 @@ prepare_panel <- function(y, X, expand = TRUE) {
   first <- !duplicated(subject)
   if (any(abs(tstart[first]) > tol)) {
     bad <- which(first)[abs(tstart[first]) > tol][1L]
-    stop("Follow-up must start at time 0, but subject ", labels[subject[bad]],
-         " starts at ", tstart[bad],
-         ". Shift the time scale so that 0 is the start of follow-up.",
-         call. = FALSE)
+    cli::cli_abort(c(
+      "Follow-up must start at time 0.",
+      "x" = "Subject {.val {labels[subject[bad]]}} starts at {tstart[bad]}.",
+      "i" = "Shift the time scale so that 0 is the start of follow-up."
+    ), class = "pcdreg_error_origin")
   }
   gap <- !first & abs(tstart - c(0, tstop[-length(tstop)])) > tol
   if (any(gap)) {
     bad <- which(gap)[1L]
-    stop("Intervals within a subject must be contiguous, but subject ",
-         labels[subject[bad]], " has a gap or overlap at time ", tstart[bad],
-         ".", call. = FALSE)
+    cli::cli_abort(c(
+      "Intervals within a subject must be contiguous.",
+      "x" = "Subject {.val {labels[subject[bad]]}} has a gap or overlap at
+             time {tstart[bad]}.",
+      "i" = "Carry the last covariate value forward rather than leaving the
+             stretch out."
+    ), class = "pcdreg_error_contiguous")
   }
   if (anyDuplicated(cbind(subject, tstop))) {
-    stop("Each subject may have at most one row ending at any given time.",
-         call. = FALSE)
+    cli::cli_abort(
+      "Each subject may have at most one row ending at any given time.",
+      class = "pcdreg_error_duplicate"
+    )
   }
   nexam_by_subject <- tabulate(subject[exam], n)
   if (any(nexam_by_subject == 0L)) {
-    stop("Every subject needs at least one examination, but subject ",
-         labels[which(nexam_by_subject == 0L)[1L]], " has none.", call. = FALSE)
+    cli::cli_abort(c(
+      "Every subject needs at least one examination.",
+      "x" = "Subject {.val {labels[which(nexam_by_subject == 0L)[1L]]}} has
+             none."
+    ), class = "pcdreg_error_no_exam")
   }
 
   # Follow-up ends at the last examination; later intervals say nothing about
@@ -57,8 +67,9 @@ prepare_panel <- function(y, X, expand = TRUE) {
   last_exam <- as.numeric(tapply(tstop[exam], subject_f[exam], max))
   keep <- tstart < last_exam[subject] - tol
   if (!all(keep)) {
-    message("Dropping ", sum(!keep), " row(s) beyond the last examination of ",
-            "their subject.")
+    cli::cli_inform("Dropping {sum(!keep)} row{?s} beyond the last examination
+                     of their subject.",
+                    class = "pcdreg_message_dropped")
     subject <- subject[keep]
     subject_f <- subject_f[keep]
     tstop <- tstop[keep]
@@ -119,8 +130,11 @@ prepare_panel <- function(y, X, expand = TRUE) {
     rows_by_subject, times_by_subject
   ), use.names = FALSE)
   if (anyNA(row_index)) {
-    stop("The covariate history does not cover the whole follow-up of every ",
-         "subject.", call. = FALSE)
+    cli::cli_abort(
+      "The covariate history does not cover the whole follow-up of every
+       subject.",
+      class = "pcdreg_error_coverage"
+    )
   }
 
   c(out, list(

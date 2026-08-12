@@ -31,7 +31,7 @@ reference:
   contents:
   - pcd
   - is.pcd
-  - plot.pcd
+  - autoplot.pcd
 
 - title: Inspecting a fit
   desc: >
@@ -42,7 +42,16 @@ reference:
   - summary.pcdfit
   - baseline
   - predict.pcdfit
-  - plot.pcdfit
+  - autoplot.pcdfit
+
+- title: Tidy output
+  desc: >
+    Methods for the broom generics, so a fit drops into a tidy workflow: one row
+    per coefficient, a one row summary of the fit, and the data with fitted
+    means and residuals attached.
+  contents:
+  - pcdreg-tidiers
+  - reexports
 
 - title: Tuning
   contents:
@@ -53,7 +62,7 @@ reference:
     The design of the simulation study in Sun et al. (2024), useful for examples
     and for checking the covariance estimators against known truth.
   contents:
-  - r_panel_count
+  - sim_pcd
 
 - title: Package
   contents:

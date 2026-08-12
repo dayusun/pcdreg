@@ -9,3 +9,6 @@ src/*.dll
 *.Rcheck/
 inst/doc
 figure/
+bash.exe.stackdump
+*.stackdump
+.agents/

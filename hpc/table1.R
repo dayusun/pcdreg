@@ -33,7 +33,7 @@ cat(sprintf("pcdreg %s | %d replications | %d cores\n",
             as.character(utils::packageVersion("pcdreg")), NREP, NCORE))
 
 one_rep <- function(i, n, frailty) {
-  d <- pcdreg::r_panel_count(n, beta = c(1, -1),
+  d <- pcdreg::sim_pcd(n, beta = c(1, -1),
                              lambda = function(t) 8 / (1 + t),
                              frailty = frailty)
   fit <- try(suppressWarnings(

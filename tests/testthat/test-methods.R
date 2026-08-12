@@ -1,6 +1,6 @@
 dat <- local({
   set.seed(3030)
-  r_panel_count(40, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+  sim_pcd(40, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 })
 fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = dat)
 
@@ -62,7 +62,11 @@ test_that("predict returns linear predictors and non-decreasing means", {
 })
 
 test_that("predict rejects data without the response for type mean", {
-  expect_error(predict(fit, dat[, c("x1", "x2")], type = "mean"))
+  # Naming the missing columns, rather than letting model.frame() fail with a
+  # bare "object 'tstart' not found".
+  expect_error(predict(fit, dat[, c("x1", "x2")], type = "mean"),
+               class = "pcdreg_error_no_response")
+  expect_error(predict(fit, dat[, c("x1", "x2")], type = "mean"), "tstart")
 })
 
 test_that("plot draws without error", {
@@ -70,6 +74,32 @@ test_that("plot draws without error", {
   grDevices::png(f)
   on.exit({ grDevices::dev.off(); unlink(f) }, add = TRUE)
   expect_silent(plot(fit))
+})
+
+# autoplot() returns a ggplot, and a plot() method that only passes that object
+# back draws nothing unless the caller happens to print it.  It then fails
+# exactly where a plot method is expected to work: inside a script, a loop, or
+# any position but the last of a knitr chunk.  expect_silent() does not catch
+# it, since returning an object silently is still silent.
+test_that("plot() draws as a side effect and returns invisibly", {
+  blank <- tempfile(fileext = ".pdf")
+  grDevices::pdf(blank)
+  grDevices::dev.off()
+  on.exit(unlink(blank), add = TRUE)
+
+  drawn <- tempfile(fileext = ".pdf")
+  grDevices::pdf(drawn)
+  on.exit({
+    if (grDevices::dev.cur() > 1L) grDevices::dev.off()
+    unlink(drawn)
+  }, add = TRUE)
+
+  res <- withVisible(plot(fit))
+  expect_false(res$visible)
+  expect_s3_class(res$value, "ggplot")
+
+  grDevices::dev.off()
+  expect_gt(file.size(drawn), file.size(blank))
 })
 
 test_that("factors and interactions are handled and no intercept is fitted", {

@@ -6,7 +6,7 @@ al. (2024), which is a convenient source of examples and test cases.
 ## Usage
 
 ``` r
-r_panel_count(
+sim_pcd(
   n,
   beta = c(1, -1),
   lambda = function(t) 8/(1 + t),
@@ -64,11 +64,11 @@ r_panel_count(
 
 ## Value
 
-A data frame in counting process form with columns `id`, `tstart`,
-`tstop`, `count`, `x1` and `x2`. Rows are intervals over which the
-covariates are constant; `count` is the number of events since the
-previous examination and is `NA` on rows that only record a covariate
-change.
+A [tibble](https://tibble.tidyverse.org/reference/tibble.html) in
+counting process form with columns `id`, `tstart`, `tstop`, `count`,
+`x1` and `x2`. Rows are intervals over which the covariates are
+constant; `count` is the number of events since the previous examination
+and is `NA` on rows that only record a covariate change.
 
 ## Details
 
@@ -90,16 +90,18 @@ for regression analysis of panel count data. *Bernoulli* **30**(4),
 
 ``` r
 set.seed(42)
-d <- r_panel_count(5, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+d <- sim_pcd(5, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 head(d)
-#>   id tstart tstop count        x1        x2
-#> 1  1   0.00  0.27     2 0.7050648 0.7191123
-#> 2  1   0.27  0.57     0 0.7050648 0.7191123
-#> 3  1   0.57  1.03     1 0.7050648 0.7191123
-#> 4  1   1.03  1.28     0 0.7050648 0.7191123
-#> 5  1   1.28  1.31     0 0.7050648 0.7191123
-#> 6  1   1.31  1.46     0 0.7050648 0.7191123
+#> # A tibble: 6 × 6
+#>      id tstart tstop count    x1    x2
+#>   <int>  <dbl> <dbl> <dbl> <dbl> <dbl>
+#> 1     1   0     0.27     2 0.705 0.719
+#> 2     1   0.27  0.57     0 0.705 0.719
+#> 3     1   0.57  1.03     1 0.705 0.719
+#> 4     1   1.03  1.28     0 0.705 0.719
+#> 5     1   1.28  1.31     0 0.705 0.719
+#> 6     1   1.31  1.46     0 0.705 0.719
 
 # Overdispersed counts: the rate model still holds, the Poisson one does not.
-od <- r_panel_count(5, frailty = 1)
+od <- sim_pcd(5, frailty = 1)
 ```

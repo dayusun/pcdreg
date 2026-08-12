@@ -56,7 +56,7 @@ at `tstop`; a row whose `count` is `NA` records only that a covariate changed.
 library(pcdreg)
 set.seed(1)
 
-d <- r_panel_count(150, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+d <- sim_pcd(150, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 head(d)
 
 fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
@@ -88,7 +88,7 @@ algorithm has already produced.
 
 ```{r overdispersion}
 set.seed(2)
-od <- r_panel_count(150, frailty = 1)   # gamma frailty: not a Poisson process
+od <- sim_pcd(150, frailty = 1)   # gamma frailty: not a Poisson process
 odfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
 rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
       information = sqrt(diag(vcov(odfit, "information"))))
@@ -96,11 +96,25 @@ rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
 
 ## The baseline and predictions
 
-```{r baseline, fig.height = 4, fig.width = 6}
+```{r baseline, fig.height = 4, fig.width = 6, fig.alt = "Estimated cumulative baseline rate as a step function rising steeply early in follow-up and flattening as time increases."}
 head(baseline(fit))
-plot(fit)
+autoplot(fit)
 
 head(predict(fit, d, type = "mean"))
+```
+
+`autoplot()` methods return `ggplot` objects, for the fitted baseline above and
+for the data itself, drawn as one tile per examination interval shaded by its
+count.
+
+## Tidy output
+
+`tidy()`, `glance()` and `augment()` methods are provided, so a fit drops
+straight into a tidy workflow.
+
+```{r tidiers}
+tidy(fit, conf.int = TRUE)
+glance(fit)
 ```
 
 ## The means model

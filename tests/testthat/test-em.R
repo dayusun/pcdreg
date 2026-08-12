@@ -1,6 +1,6 @@
 make_data <- function(n = 30, seed = 20240101, ...) {
   set.seed(seed)
-  r_panel_count(n, beta = c(1, -1), lambda = function(t) 8 / (1 + t), ...)
+  sim_pcd(n, beta = c(1, -1), lambda = function(t) 8 / (1 + t), ...)
 }
 
 test_that("the compiled EM matches an independent pure R implementation", {

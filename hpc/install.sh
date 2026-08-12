@@ -22,7 +22,7 @@ Rscript -e '
   library(pcdreg, lib.loc = lib)
   cat("pcdreg", as.character(packageVersion("pcdreg")), "installed into", lib, "\n")
   set.seed(1)
-  d <- r_panel_count(30)
+  d <- sim_pcd(30)
   fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
   cat("smoke test coefficients:", format(coef(fit), digits = 4), "\n")
 '

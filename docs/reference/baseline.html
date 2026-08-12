@@ -65,7 +65,8 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data frame with one row per examination time on the pooled grid.
+    <p>A <a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a> with one row per examination time on the
+pooled grid.
 For <code><a href="pcdreg.html">pcdreg()</a></code> it gives the jump sizes and the cumulative baseline rate
 \(\Lambda(t)\); for <code><a href="pcdreg.html">pcdreg()</a></code> it gives the baseline mean
 \(\mu(t)\), which is not constrained to increase.</p>
@@ -74,23 +75,27 @@ For <code><a href="pcdreg.html">pcdreg()</a></code> it gives the jump sizes and 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="r_panel_count.html">r_panel_count</a></span><span class="op">(</span><span class="fl">80</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, lambda <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="fl">8</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">t</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_pcd.html">sim_pcd</a></span><span class="op">(</span><span class="fl">80</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, lambda <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="fl">8</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">t</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">baseline</span><span class="op">(</span><span class="fu"><a href="pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, <span class="va">d</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   time         jump   cumrate</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.01 1.026524e-01 0.1026524</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.02 1.598776e-81 0.1026524</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.03 4.920883e-81 0.1026524</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.04 0.000000e+00 0.1026524</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 0.05 0.000000e+00 0.1026524</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 0.06 0.000000e+00 0.1026524</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    time     jump cumrate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0.01 1.03<span style="color: #949494;">e</span><span style="color: #BB0000;">- 1</span>   0.103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  0.02 1.60<span style="color: #949494;">e</span><span style="color: #BB0000;">-81</span>   0.103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>  0.03 4.92<span style="color: #949494;">e</span><span style="color: #BB0000;">-81</span>   0.103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>  0.04 0   <span style="color: #949494;"> </span>      0.103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>  0.05 0   <span style="color: #949494;"> </span>      0.103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>  0.06 0   <span style="color: #949494;"> </span>      0.103</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">baseline</span><span class="op">(</span><span class="fu"><a href="pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, <span class="va">d</span>, model <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   time      mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.01 0.2906572</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.02 0.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.03 0.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.04 0.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 0.05 0.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 0.06 0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    time  mean</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0.01 0.291</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  0.02 0    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>  0.03 0    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>  0.04 0    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>  0.05 0    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>  0.06 0    </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

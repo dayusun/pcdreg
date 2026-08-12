@@ -27,6 +27,7 @@
 #' @useDynLib pcdreg, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 #' @importFrom ggplot2 autoplot
+#' @importFrom rlang .data
 #' @importFrom stats coef confint logLik nobs predict vcov
 #' @importFrom stats delete.response model.frame model.matrix model.response
 #' @importFrom stats na.pass pnorm printCoefmat qnorm terms
@@ -41,6 +42,6 @@
 #' @export
 ggplot2::autoplot
 
-# Column names used inside ggplot2::aes(), which R CMD check cannot see are
-# columns rather than stray globals.
-utils::globalVariables(c("tstart", "tstop", "y", "bin", "time", "value"))
+# Column names inside ggplot2::aes() are written as `.data$name`, which tells
+# both the reader and R CMD check that they are columns rather than globals.
+# That is why there is no utils::globalVariables() call here.

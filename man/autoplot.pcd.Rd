@@ -34,7 +34,9 @@ sequential ramp, which is where a magnitude belongs.}
 }
 \value{
 A \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}} object, so it can be titled, faceted or
-themed like any other.
+themed like any other. \code{autoplot()} returns it; \code{plot()} draws it and
+returns it invisibly, so it can be used for its side effect like any
+other \code{plot()} method.
 }
 \description{
 Draws the observation pattern as tiles: one row per subject, one tile per
@@ -56,7 +58,7 @@ subjects.
 }
 \examples{
 set.seed(1)
-d <- r_panel_count(40)
+d <- sim_pcd(40)
 autoplot(with(d, pcd(id, tstart, tstop, count)))
 
 }

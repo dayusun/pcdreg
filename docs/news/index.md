@@ -41,3 +41,34 @@
   [`predict()`](https://rdrr.io/r/stats/predict.html) and
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) work the same
   way for either.
+
+- [`tidy()`](https://generics.r-lib.org/reference/tidy.html),
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) and
+  [`augment()`](https://generics.r-lib.org/reference/augment.html)
+  methods are provided for the broom generics.
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) takes the
+  same `type` argument as [`vcov()`](https://rdrr.io/r/stats/vcov.html),
+  so the tidy path reports the same standard errors as
+  [`summary()`](https://rdrr.io/r/base/summary.html).
+  [`augment()`](https://generics.r-lib.org/reference/augment.html) adds
+  the fitted mean, the observed cumulative count and their difference to
+  each row.
+
+- [`sim_pcd()`](https://www.sundayu.me/pcdreg/reference/sim_pcd.md)
+  simulates from the design of the paper’s simulation study.
+
+- [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
+  methods return `ggplot` objects for the data, drawn as one tile per
+  examination interval shaded by its count, and for the fitted baseline.
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws them
+  and returns the object invisibly.
+
+- [`baseline()`](https://www.sundayu.me/pcdreg/reference/baseline.md),
+  `predict(type = "mean")` and
+  [`sim_pcd()`](https://www.sundayu.me/pcdreg/reference/sim_pcd.md)
+  return tibbles.
+
+- Errors, warnings and messages use cli and carry condition classes, so
+  a particular failure can be caught with
+  [`tryCatch()`](https://rdrr.io/r/base/conditions.html) rather than by
+  matching on message text.

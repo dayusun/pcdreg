@@ -162,13 +162,13 @@ Murphy, S. A. and van der Vaart, A. W. (2000). On profile likelihood.
 [`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md),
 [`vcov.pcdfit()`](https://www.sundayu.me/pcdreg/reference/vcov.pcdfit.md),
 [`baseline()`](https://www.sundayu.me/pcdreg/reference/baseline.md),
-[`r_panel_count()`](https://www.sundayu.me/pcdreg/reference/r_panel_count.md)
+[`sim_pcd()`](https://www.sundayu.me/pcdreg/reference/sim_pcd.md)
 
 ## Examples
 
 ``` r
 set.seed(1)
-d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+d <- sim_pcd(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 
 fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)

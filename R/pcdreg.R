@@ -5,8 +5,10 @@ pcd_model_data <- function(mf) {
   mt <- attr(mf, "terms")
   y <- stats::model.response(mf)
   if (!is.pcd(y)) {
-    stop("The left hand side of `formula` must be a `pcd()` object.",
-         call. = FALSE)
+    cli::cli_abort(
+      "The left hand side of {.arg formula} must be a {.fn pcd} object.",
+      class = "pcdreg_error_no_response"
+    )
   }
   X <- stats::model.matrix(mt, mf)
   # Keep the contrasts before subsetting: dropping a column drops the attribute
@@ -21,8 +23,11 @@ pcd_model_data <- function(mf) {
 pcd_init <- function(init, p) {
   if (is.null(init)) return(numeric(p))
   if (length(init) != p) {
-    stop("`init` has length ", length(init), " but the model has ", p,
-         " coefficient(s).", call. = FALSE)
+    cli::cli_abort(
+      "{.arg init} has length {length(init)} but the model has
+       {p} coefficient{?s}.",
+      class = "pcdreg_error_init_length"
+    )
   }
   as.numeric(init)
 }
@@ -183,7 +188,7 @@ pcdreg_control <- function(maxit = 2000L, reltol = 1e-7, accelerate = TRUE,
 #'
 #' @examples
 #' set.seed(1)
-#' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+#' d <- sim_pcd(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 #'
 #' fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' summary(fit)
@@ -194,7 +199,7 @@ pcdreg_control <- function(maxit = 2000L, reltol = 1e-7, accelerate = TRUE,
 #'                model = "mean")
 #' cbind(rate = coef(fit), mean = coef(mfit))
 #'
-#' @seealso [pcd()], [vcov.pcdfit()], [baseline()], [r_panel_count()]
+#' @seealso [pcd()], [vcov.pcdfit()], [baseline()], [sim_pcd()]
 #' @export
 pcdreg <- function(formula, data, model = c("rate", "mean"), subset, na.action,
                    control = pcdreg_control(), profile = FALSE, init = NULL) {
@@ -212,9 +217,12 @@ pcdreg <- function(formula, data, model = c("rate", "mean"), subset, na.action,
   init <- pcd_init(init, p)
 
   if (model == "mean" && isTRUE(profile)) {
-    stop("The means model is fitted by an estimating equation rather than a ",
-         "likelihood, so `profile = TRUE` is only available for ",
-         "`model = \"rate\"`.", call. = FALSE)
+    cli::cli_abort(
+      "The means model is fitted by an estimating equation rather than a
+       likelihood, so {.code profile = TRUE} is only available for
+       {.code model = \"rate\"}.",
+      class = "pcdreg_error_profile_model"
+    )
   }
 
   # Only the rate model needs the covariate trajectory expanded onto the pooled
@@ -271,10 +279,11 @@ fit_rate <- function(d, init, control, profile) {
                     d$n, d$K, init, lambda0,
                     control$maxit, control$reltol, control$accelerate)
   if (!fit$converged) {
-    warning("The EM algorithm did not converge in ", control$maxit,
-            " iterations (relative change ", format(fit$criterion, digits = 3),
-            "). Consider raising `maxit` in `pcdreg_control()`.",
-            call. = FALSE)
+    cli::cli_warn(c(
+      "The EM algorithm did not converge in {control$maxit} iteration{?s}.",
+      "x" = "Relative change {format(fit$criterion, digits = 3)}.",
+      "i" = "Consider raising {.arg maxit} in {.fn pcdreg_control}."
+    ), class = "pcdreg_warning_no_convergence")
   }
 
   beta <- drop(fit$beta)
@@ -291,17 +300,19 @@ fit_rate <- function(d, init, control, profile) {
                                  d$panelsubj, d$n, d$K, beta, lambda, h,
                                  control$profile_maxit, control$profile_reltol)
     if (any(prof$converged == 0L)) {
-      warning("Some baseline-only fits behind the profile likelihood ",
-              "covariance did not converge; treat `type = \"profile\"` with ",
-              "caution.", call. = FALSE)
+      cli::cli_warn(
+        "Some baseline-only fits behind the profile likelihood covariance did
+         not converge, so treat {.code type = \"profile\"} with caution.",
+        class = "pcdreg_warning_profile"
+      )
     }
     extra$profile <- profile_vcov(prof$gradient)
   }
 
   list(beta = beta, Omega = cov_parts$Omega, S = cov_parts$S,
        scores = cov_parts$scores, extra_vcov = extra,
-       baseline = data.frame(time = d$times, jump = lambda,
-                             cumrate = cumsum(lambda)),
+       baseline = tibble::tibble(time = d$times, jump = lambda,
+                                 cumrate = cumsum(lambda)),
        info = list(loglik = fit$loglik, iterations = fit$iterations,
                    passes = fit$passes, converged = fit$converged,
                    criterion = fit$criterion))
@@ -312,14 +323,16 @@ fit_mean <- function(d, init, control) {
   fit <- mean_fit_cpp(d$exam_X, d$exam_subj, d$exam_grid, d$cN, d$n, d$K,
                       init, control$maxit, control$reltol)
   if (!fit$converged) {
-    warning("The estimating equation did not converge in ", control$maxit,
-            " iterations (relative change ", format(fit$criterion, digits = 3),
-            "). Consider raising `maxit` in `pcdreg_control()`.",
-            call. = FALSE)
+    cli::cli_warn(c(
+      "The estimating equation did not converge in {control$maxit}
+       iteration{?s}.",
+      "x" = "Relative change {format(fit$criterion, digits = 3)}.",
+      "i" = "Consider raising {.arg maxit} in {.fn pcdreg_control}."
+    ), class = "pcdreg_warning_no_convergence")
   }
   list(beta = drop(fit$beta), Omega = fit$Omega, S = fit$S,
        scores = fit$scores, extra_vcov = list(),
-       baseline = data.frame(time = d$times, mean = drop(fit$mu)),
+       baseline = tibble::tibble(time = d$times, mean = drop(fit$mu)),
        info = list(iterations = fit$iterations, converged = fit$converged,
                    criterion = fit$criterion))
 }
@@ -331,8 +344,11 @@ robust_vcov <- function(Omega, S, n) {
     tryCatch(solve(-Omega), error = function(e) NULL)
   }
   if (is.null(inv) || !all(is.finite(inv))) {
-    warning("Omega is singular or not finite, so the robust covariance is ",
-            "unavailable.", call. = FALSE)
+    cli::cli_warn(
+      "{.field Omega} is singular or not finite, so the robust covariance is
+       unavailable.",
+      class = "pcdreg_warning_singular"
+    )
     return(NULL)
   }
   symmetrise(inv %*% S %*% inv / n)
@@ -342,8 +358,11 @@ robust_vcov <- function(Omega, S, n) {
 information_vcov <- function(S, n) {
   inv <- if (all(is.finite(S))) tryCatch(solve(S), error = function(e) NULL)
   if (is.null(inv) || !all(is.finite(inv))) {
-    warning("S is singular or not finite, so the information covariance is ",
-            "unavailable.", call. = FALSE)
+    cli::cli_warn(
+      "{.field S} is singular or not finite, so the information covariance is
+       unavailable.",
+      class = "pcdreg_warning_singular"
+    )
     return(NULL)
   }
   symmetrise(inv / n)
@@ -354,8 +373,10 @@ information_vcov <- function(S, n) {
 profile_vcov <- function(gradient) {
   inv <- tryCatch(solve(crossprod(gradient)), error = function(e) NULL)
   if (is.null(inv)) {
-    warning("The profile likelihood covariance is singular and unavailable.",
-            call. = FALSE)
+    cli::cli_warn(
+      "The profile likelihood covariance is singular and unavailable.",
+      class = "pcdreg_warning_singular"
+    )
     return(NULL)
   }
   symmetrise(inv)

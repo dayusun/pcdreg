@@ -9,16 +9,38 @@ pcd_linear_predictor <- function(object, newdata) {
   drop(X %*% coef(object))
 }
 
+# Anything that follows a covariate trajectory needs the response columns as
+# well as the covariates.  model.frame() would fail on its own, but with a bare
+# "object 'tstart' not found" that says nothing about why the column was wanted,
+# so the columns are checked here first.
+pcd_require_response <- function(object, data, arg = "newdata") {
+  vars <- all.vars(attr(object$terms, "variables")[[2L]])
+  absent <- setdiff(vars, names(data))
+  if (length(absent)) {
+    cli::cli_abort(c(
+      "{.arg {arg}} must contain the {.fn pcd} response.",
+      "x" = "Missing column{?s}: {.field {absent}}.",
+      "i" = "The predicted mean follows each subject's covariate trajectory,
+             so the examination times are needed as well as the covariates."
+    ), class = "pcdreg_error_no_response", call = rlang::caller_env())
+  }
+  invisible(data)
+}
+
 # Follow each subject's covariate trajectory across the fitted grid times that
 # fall within their follow-up, and hand the per-time linear predictors to
 # `combine`, which turns them into the predicted mean the model implies.
 pcd_trajectory <- function(object, newdata, combine) {
+  pcd_require_response(object, newdata)
   mf <- stats::model.frame(object$terms, newdata, na.action = stats::na.pass,
                            xlev = object$xlevels)
   y <- stats::model.response(mf)
   if (!is.pcd(y)) {
-    stop("`newdata` must contain the `pcd()` variables for ",
-         "`type = \"mean\"`.", call. = FALSE)
+    cli::cli_abort(
+      "{.arg newdata} must contain the {.fn pcd} variables for
+       {.code type = \"mean\"}.",
+      class = "pcdreg_error_no_response"
+    )
   }
   X <- stats::model.matrix(object$terms, mf, contrasts.arg = object$contrasts)
   intercept <- match("(Intercept)", colnames(X), 0L)
@@ -42,15 +64,18 @@ pcd_trajectory <- function(object, newdata, combine) {
   out <- do.call(rbind, out)
   rownames(out) <- NULL
   if (!is.null(labels)) out$id <- labels[out$id]
-  out
+  tibble::as_tibble(out)
 }
 
 pcd_newdata <- function(object, newdata) {
   if (!missing(newdata) && !is.null(newdata)) return(newdata)
   out <- eval(object$call$data, environment(object$terms))
   if (is.null(out)) {
-    stop("`newdata` is required because the original data is no longer ",
-         "available.", call. = FALSE)
+    cli::cli_abort(
+      "{.arg newdata} is required because the original data is no longer
+       available.",
+      class = "pcdreg_error_no_data"
+    )
   }
   out
 }
@@ -70,8 +95,8 @@ pcd_newdata <- function(object, newdata) {
 #' @param ... Ignored.
 #'
 #' @return For `type = "lp"`, a numeric vector with one element per row of
-#'   `newdata`. For `type = "mean"`, a data frame with columns `id`, `time` and
-#'   `mean`.
+#'   `newdata`. For `type = "mean"`, a [tibble][tibble::tibble] with columns
+#'   `id`, `time` and `mean`.
 #'
 #' @details
 #' The rate model's predicted mean is non-decreasing in \eqn{t} by construction,
@@ -82,7 +107,7 @@ pcd_newdata <- function(object, newdata) {
 #'
 #' @examples
 #' set.seed(1)
-#' d <- r_panel_count(60, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+#' d <- sim_pcd(60, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 #' fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #' head(predict(fit))
 #' head(predict(fit, type = "mean"))

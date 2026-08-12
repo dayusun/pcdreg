@@ -107,7 +107,7 @@ pcd(
 # Used on the left hand side of a formula, which is how you will normally
 # meet it.
 set.seed(1)
-d <- r_panel_count(40)
+d <- sim_pcd(40)
 fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 c(subjects = fit$n, examinations = fit$nexam, events = fit$nevent)
 

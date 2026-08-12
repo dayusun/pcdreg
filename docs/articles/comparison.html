@@ -69,37 +69,36 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/dayusun/pcdreg" class="external-link">pcdreg</a></span><span class="op">)</span></span></code></pre></div>
-<p>This article is about choosing a tool, so it says what
-<code>pcdreg</code> does that the alternatives do not, and equally what
-they do that it does not.</p>
+<p>This article describes the settings in which <code>pcdreg</code> and
+the available alternatives apply.</p>
 <div class="section level2">
 <h2 id="the-landscape">The landscape<a class="anchor" aria-label="anchor" href="#the-landscape"></a>
 </h2>
-<p>Three kinds of package meet recurrent event data in R, and they are
-not interchangeable.</p>
+<p>Three classes of R package address recurrent event data. They are not
+interchangeable.</p>
 <p><strong>Exactly observed event times.</strong> If you know
 <em>when</em> each event happened, <code>reReg</code>,
-<code>survival</code> and the rest of the recurrent event literature
-apply, and none of what follows is relevant. Panel count data are the
-case where you know only how many events fell between visits.</p>
+<code>survival</code>, and the recurrent-event literature apply. The
+discussion below concerns panel count data, where only the number of
+events between visits is known.</p>
 <p><strong><code>spef</code></strong>, by Chiou, Wang and Yan, is the
 established R package for panel count data. It offers a wide range of
 estimators through one function,
-<code>panelReg(formula, data, method = ...)</code>: augmented estimating
-equations that allow the observation process to be informative
+<code>panelReg(formula, data, method = ...)</code>. These include
+augmented estimating equations for an informative observation process
 (<code>AEE</code>, <code>AEEX</code>), maximum pseudolikelihood and
 monotone spline likelihood methods (<code>MPL</code>, <code>MPLs</code>,
 <code>MLs</code>), the Sun–Wei and Hu–Sun–Wei estimating equations, and
 an accelerated mean model. Its response is
-<code>PanelSurv(ID, time, count)</code>, one row per examination. Every
-one of those methods targets the <strong>mean</strong> model. At the
-time of writing <code>spef</code> is archived on CRAN — since June 2026,
-for an undeliverable maintainer address rather than anything to do with
-the code — so it installs from the archive rather than from
+<code>PanelSurv(ID, time, count)</code>, one row per examination. All of
+these methods target the <strong>mean</strong> model. At the time of
+writing, <code>spef</code> is archived on CRAN — since June 2026, for an
+undeliverable maintainer address rather than anything to do with the
+code — so it installs from the archive rather than from
 <code><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages()</a></code>.</p>
-<p><strong><code>pcdreg</code></strong> fits the rate model and the mean
-model, with covariates that may vary over time, and estimates the
-covariance without leaning on a Poisson assumption.</p>
+<p><strong><code>pcdreg</code></strong> fits the rate and mean models
+with time-varying covariates. Its covariance estimate does not rely on a
+Poisson assumption.</p>
 </div>
 <div class="section level2">
 <h2 id="what-is-actually-different">What is actually different<a class="anchor" aria-label="anchor" href="#what-is-actually-different"></a>
@@ -107,16 +106,16 @@ covariance without leaning on a Poisson assumption.</p>
 <div class="section level3">
 <h3 id="the-rate-model">The rate model<a class="anchor" aria-label="anchor" href="#the-rate-model"></a>
 </h3>
-<p>This is the substantive difference. The means model constrains the
+<p>This is the substantive distinction. The means model constrains the
 <em>cumulative</em> count; the rate model constrains the
-<em>instantaneous</em> one. With covariates that move over time these
-are different models, not two parametrisations of one, and means
-something different in each.</p>
+<em>instantaneous</em> count. With time-varying covariates, these are
+different models. They are not two parametrisations of one, and has a
+different meaning in each.</p>
 <p>Simulate from the rate model with a covariate that steps part way
 through follow-up, and fit both:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/r_panel_count.html">r_panel_count</a></span><span class="op">(</span><span class="fl">300</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, lambda <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="fl">8</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">t</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_pcd.html">sim_pcd</a></span><span class="op">(</span><span class="fl">300</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, lambda <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="fl">8</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">t</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span><span class="op">)</span></span>
 <span><span class="va">mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span>,</span>
@@ -132,17 +131,16 @@ different quantity. If your scientific question is about the
 instantaneous risk — the analogue of a hazard ratio — then only the
 first column of estimates answers it, and a package offering mean models
 alone cannot produce it.</p>
-<p>The reverse holds too. If your question is about the cumulative
-burden by time , the means model is the right one, and
-<code>pcdreg(model = "mean")</code> and <code>spef</code>’s
-<code>EE.HSWc</code> are the same estimator.</p>
+<p>If the question concerns cumulative burden by time , the means model
+is appropriate. <code>pcdreg(model = "mean")</code> and
+<code>spef</code>’s <code>EE.HSWc</code> are the same estimator.</p>
 </div>
 <div class="section level3">
 <h3 id="monotonicity">Monotonicity<a class="anchor" aria-label="anchor" href="#monotonicity"></a>
 </h3>
-<p>There is a second, more practical consequence. Nothing constrains a
-fitted mean function to increase, and with a fluctuating covariate it
-generally does not:</p>
+<p>There is a practical consequence. Nothing constrains a fitted mean
+function to increase, and with a fluctuating covariate it generally does
+not:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/baseline.html">baseline</a></span><span class="op">(</span><span class="va">mean</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>increasing <span class="op">=</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/is.unsorted.html" class="external-link">is.unsorted</a></span><span class="op">(</span><span class="va">mu</span><span class="op">)</span>, decreases_at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">mu</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
@@ -157,45 +155,44 @@ construction:</p>
 <code class="sourceCode R"><span><span class="va">pr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">rate</span>, <span class="va">d</span>, type <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="va">pr</span><span class="op">$</span><span class="va">mean</span>, <span class="va">pr</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">v</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">v</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
-<p>Some <code>spef</code> methods address this from the other side,
-fitting with monotone I-splines so the <em>baseline</em> increases by
-construction. That is a real solution to half the problem: it does not
-stop the fitted mean for a given subject from falling when their
-covariates fall.</p>
+<p>Some <code>spef</code> methods fit with monotone I-splines, so the
+<em>baseline</em> increases by construction. This resolves half the
+problem. The fitted mean for a subject can still decline when their
+covariates decline.</p>
 </div>
 <div class="section level3">
 <h3 id="covariates-between-examinations">Covariates between examinations<a class="anchor" aria-label="anchor" href="#covariates-between-examinations"></a>
 </h3>
-<p>The rate model’s likelihood evaluates each subject’s covariate
-trajectory at every pooled examination time inside their follow-up,
-including times at which <em>that</em> subject was not examined. A
-response of the form <code>PanelSurv(ID, time, count)</code>, with one
-row per examination, has nowhere to put a covariate value at a time when
-the subject was not seen. <code><a href="../reference/pcd.html">pcd()</a></code>’s counting process form
-does:</p>
+<p>The rate-model likelihood evaluates each subject’s covariate
+trajectory at every pooled examination time during follow-up, including
+times at which <em>that</em> subject was not examined. A
+<code>PanelSurv(ID, time, count)</code> response has one row per
+examination and cannot record a covariate value when the subject was not
+seen. The counting-process form of <code><a href="../reference/pcd.html">pcd()</a></code> can:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">id</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   id   tstart    tstop count        x1        x2</span></span>
-<span><span class="co">#&gt; 1  1 0.000000 0.380000     1 0.8983897 0.6607978</span></span>
-<span><span class="co">#&gt; 2  1 0.380000 1.070000     3 0.8983897 0.6607978</span></span>
-<span><span class="co">#&gt; 3  1 1.070000 1.258228    NA 0.8983897 0.6607978</span></span>
-<span><span class="co">#&gt; 4  1 1.258228 1.700000     4 0.9446753 0.6607978</span></span></code></pre></div>
-<p>Row 3 here has <code>count = NA</code>: it records that a covariate
-changed at that time, not an examination. That is the information the
-rate model needs and the one row per examination layout cannot
-carry.</p>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 6</span></span></span>
+<span><span class="co">#&gt;      id tstart tstop count    x1    x2</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1   0     0.38     1 0.898 0.661</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     1   0.38  1.07     3 0.898 0.661</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     1   1.07  1.26    <span style="color: #BB0000;">NA</span> 0.898 0.661</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     1   1.26  1.7      4 0.945 0.661</span></span></code></pre></div>
+<p>Row 3 has <code>count = NA</code>, recording a covariate change at
+that time, not an examination. The rate model needs this information.
+The one-row-per-examination layout cannot carry it.</p>
 </div>
 <div class="section level3">
 <h3 id="variance-without-the-poisson-assumption">Variance without the Poisson assumption<a class="anchor" aria-label="anchor" href="#variance-without-the-poisson-assumption"></a>
 </h3>
-<p>The rate model’s likelihood is the one a Poisson process would give,
-which is a working device rather than a claim about the data. Recurrent
-event data are usually overdispersed, and then the standard errors that
-assume Poisson counts are far too small. <code>pcdreg</code> reports a
-robust sandwich by default and will show you the difference:</p>
+<p>The rate-model likelihood is the likelihood of a Poisson process. It
+is a working device, not a claim about the data. Recurrent event data
+are usually overdispersed, so standard errors that assume Poisson counts
+are far too small. <code>pcdreg</code> reports a robust sandwich by
+default:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
-<span><span class="va">od</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/r_panel_count.html">r_panel_count</a></span><span class="op">(</span><span class="fl">300</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, frailty <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>  <span class="co"># gamma frailty</span></span>
+<span><span class="va">od</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_pcd.html">sim_pcd</a></span><span class="op">(</span><span class="fl">300</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, frailty <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>  <span class="co"># gamma frailty</span></span>
 <span><span class="va">odfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">od</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>robust      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov</a></span><span class="op">(</span><span class="va">odfit</span>, <span class="st">"robust"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -203,25 +200,23 @@ robust sandwich by default and will show you the difference:</p>
 <span><span class="co">#&gt;                 x1     x2</span></span>
 <span><span class="co">#&gt; robust      0.2017 0.2152</span></span>
 <span><span class="co">#&gt; information 0.0335 0.0295</span></span></code></pre></div>
-<p>The simulations in the paper put the coverage of nominal 95%
-intervals built from the second row at 15–22%. Both are available here,
-and the honest one is the default.</p>
+<p>The paper’s simulations put coverage of nominal 95% intervals built
+from the second row at 15–22%. Both estimators are available; the robust
+estimator is the default.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="seeing-the-data-first">Seeing the data first<a class="anchor" aria-label="anchor" href="#seeing-the-data-first"></a>
 </h2>
-<p><code>pcdreg</code> also plots the observation pattern, which is
-worth a look before fitting anything:</p>
+<p><code>pcdreg</code> also plots the observation pattern:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">d</span>, <span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span><span class="op">)</span>, max_subjects <span class="op">=</span> <span class="fl">40</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Showing 40 of 300 subjects.</span></span></code></pre></div>
 <p><img src="comparison_files/figure-html/dataplot-1.png" class="r-plt" alt="Panel count data plot: one row per subject, follow-up drawn as a grey line, filled circles at examinations with area proportional to the event count and open circles where no events were recorded." width="672"></p>
-<p>Two things visible here decide how the analysis will go. Whether
-examination times line up across subjects sets the size of the pooled
-grid and so the cost of fitting the rate model; and how ragged the right
-hand edge is tells you how much of the tail of the baseline rests on a
-handful of subjects.</p>
+<p>Two features of this plot affect the analysis. Alignment of
+examination times across subjects determines the pooled-grid size and
+the cost of fitting the rate model. The raggedness of the right edge
+shows how much of the baseline tail rests on a handful of subjects.</p>
 </div>
 <div class="section level2">
 <h2 id="which-to-use">Which to use<a class="anchor" aria-label="anchor" href="#which-to-use"></a>
@@ -270,9 +265,8 @@ handful of subjects.</p>
 </tbody>
 </table>
 <p><code>pcdreg</code> is deliberately narrow. It implements two models
-carefully, with the covariance estimation worked out and tested, rather
-than many models at once. Where <code>spef</code> has an estimator you
-need, use it.</p>
+with covariance estimation worked out and tested. Use <code>spef</code>
+when it provides an estimator you need.</p>
 </div>
 <div class="section level2">
 <h2 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>

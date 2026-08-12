@@ -1,6 +1,6 @@
 test_that("the simulator returns well formed panel count data", {
   set.seed(99)
-  d <- r_panel_count(30)
+  d <- sim_pcd(30)
   expect_named(d, c("id", "tstart", "tstop", "count", "x1", "x2"))
   expect_equal(length(unique(d$id)), 30L)
   expect_true(all(d$tstart < d$tstop))
@@ -22,8 +22,8 @@ test_that("the simulator returns well formed panel count data", {
 
 test_that("rounding ties the examination times across subjects", {
   set.seed(7)
-  tied <- r_panel_count(60, digits = 2)
-  untied <- r_panel_count(60, digits = NA)
+  tied <- sim_pcd(60, digits = 2)
+  untied <- sim_pcd(60, digits = NA)
   ntied <- length(unique(tied$tstop[!is.na(tied$count)]))
   nuntied <- length(unique(untied$tstop[!is.na(untied$count)]))
   expect_lt(ntied, nuntied)
@@ -32,7 +32,7 @@ test_that("rounding ties the examination times across subjects", {
 
 test_that("the time-varying covariate really varies and x2 does not", {
   set.seed(11)
-  d <- r_panel_count(40)
+  d <- sim_pcd(40)
   by_subject <- split(d, d$id)
   expect_true(any(vapply(by_subject,
                          function(s) length(unique(s$x1)) > 1, logical(1))))
@@ -43,8 +43,8 @@ test_that("the time-varying covariate really varies and x2 does not", {
 test_that("a frailty produces overdispersion relative to Poisson", {
   skip_on_cran()
   set.seed(2024)
-  poisson <- r_panel_count(400, frailty = 0)
-  mixed <- r_panel_count(400, frailty = 1)
+  poisson <- sim_pcd(400, frailty = 0)
+  mixed <- sim_pcd(400, frailty = 1)
   total <- function(d) vapply(split(d$count, d$id),
                               function(v) sum(v, na.rm = TRUE), numeric(1))
   ratio <- function(d) { x <- total(d); stats::var(x) / mean(x) }
@@ -54,7 +54,7 @@ test_that("a frailty produces overdispersion relative to Poisson", {
 test_that("the estimator recovers the truth on simulated data", {
   skip_on_cran()
   set.seed(4321)
-  d <- r_panel_count(400, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+  d <- sim_pcd(400, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
   fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
   se <- sqrt(diag(vcov(fit)))
   # Within three standard errors of the truth.
@@ -67,6 +67,6 @@ test_that("the estimator recovers the truth on simulated data", {
 })
 
 test_that("simulator arguments are validated", {
-  expect_error(r_panel_count(10, beta = 1), "length\\(beta\\)")
-  expect_error(r_panel_count(10, lambda = function(t) -t), "positive and finite")
+  expect_error(sim_pcd(10, beta = 1), "length\\(beta\\)")
+  expect_error(sim_pcd(10, lambda = function(t) -t), "positive and finite")
 })
