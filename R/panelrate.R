@@ -120,32 +120,16 @@ panelrate <- function(formula, data, subset, na.action,
   mf[[1L]] <- quote(stats::model.frame)
   mf <- eval(mf, parent.frame())
 
-  mt <- attr(mf, "terms")
-  y <- stats::model.response(mf)
-  if (!is.PanelCount(y)) {
-    stop("The left hand side of `formula` must be a `PanelCount()` object.",
-         call. = FALSE)
-  }
-  X <- stats::model.matrix(mt, mf)
-  # Keep the contrasts before subsetting: dropping a column drops the attribute
-  # with it, and predict() needs the same coding the fit used.
-  contrasts <- attr(X, "contrasts")
-  intercept <- match("(Intercept)", colnames(X), 0L)
-  if (intercept > 0L) X <- X[, -intercept, drop = FALSE]
+  md <- pcd_model_data(mf)
+  X <- md$X
   p <- ncol(X)
+  init <- pcd_init(init, p)
 
-  if (is.null(init)) {
-    init <- numeric(p)
-  } else if (length(init) != p) {
-    stop("`init` has length ", length(init), " but the model has ", p,
-         " coefficient(s).", call. = FALSE)
-  }
-
-  d <- prepare_panel(y, X)
+  d <- prepare_panel(md$y, X)
   lambda0 <- rep.int(1 / max(d$K, 1L), d$K)
 
   fit <- em_fit_cpp(d$X, d$subj, d$grid, d$panel, d$dN, d$panelsubj,
-                    d$n, d$K, as.numeric(init), lambda0,
+                    d$n, d$K, init, lambda0,
                     control$maxit, control$reltol, control$accelerate)
   if (!fit$converged) {
     warning("The EM algorithm did not converge in ", control$maxit,
@@ -208,12 +192,12 @@ panelrate <- function(formula, data, subset, na.action,
       criterion = fit$criterion,
       control = control,
       call = cl,
-      terms = mt,
-      xlevels = stats::.getXlevels(mt, mf),
-      contrasts = contrasts,
-      na.action = attr(mf, "na.action")
+      terms = md$terms,
+      xlevels = md$xlevels,
+      contrasts = md$contrasts,
+      na.action = md$na.action
     ),
-    class = "panelrate"
+    class = c("panelrate", "pcdfit")
   )
 }
 

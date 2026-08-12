@@ -77,11 +77,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// mean_fit_cpp
+Rcpp::List mean_fit_cpp(const arma::mat& X, const arma::uvec& subj, const arma::uvec& grid, const arma::vec& cN, arma::uword n, arma::uword K, arma::vec beta, arma::uword maxit, double reltol);
+RcppExport SEXP _pcdreg_mean_fit_cpp(SEXP XSEXP, SEXP subjSEXP, SEXP gridSEXP, SEXP cNSEXP, SEXP nSEXP, SEXP KSEXP, SEXP betaSEXP, SEXP maxitSEXP, SEXP reltolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type subj(subjSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type grid(gridSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type cN(cNSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type n(nSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type K(KSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type maxit(maxitSEXP);
+    Rcpp::traits::input_parameter< double >::type reltol(reltolSEXP);
+    rcpp_result_gen = Rcpp::wrap(mean_fit_cpp(X, subj, grid, cN, n, K, beta, maxit, reltol));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pcdreg_em_fit_cpp", (DL_FUNC) &_pcdreg_em_fit_cpp, 13},
     {"_pcdreg_covariance_cpp", (DL_FUNC) &_pcdreg_covariance_cpp, 10},
     {"_pcdreg_profile_gradient_cpp", (DL_FUNC) &_pcdreg_profile_gradient_cpp, 13},
+    {"_pcdreg_mean_fit_cpp", (DL_FUNC) &_pcdreg_mean_fit_cpp, 9},
     {NULL, NULL, 0}
 };
 

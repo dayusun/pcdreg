@@ -4,18 +4,20 @@ Title: Semiparametric Regression for Panel Count Data
 Version: 0.1.0
 Authors@R: person("Dayu", "Sun", email = "dayusun@iu.edu",
                   role = c("aut", "cre"))
-Description: Fits the semiparametric proportional rate model for panel count
-    data, that is, for recurrent event processes observed only at intermittent
-    examination times, allowing covariates to be time-varying. Estimation uses
-    a nonparametric maximum likelihood approach implemented through an
-    expectation-maximization algorithm under a working Poisson assumption, while
-    inference does not require that assumption to hold. Two computationally
-    inexpensive covariance estimators are provided: a robust sandwich estimator
-    that remains consistent when the Poisson assumption fails, and an efficient
-    information estimator that is a fast substitute for profile likelihood when
-    it holds. The profile likelihood estimator is also available for comparison.
-    Methods are described in Sun, Guo, Li, Tu and Sun (2024)
-    <doi:10.3150/23-BEJ1713>.
+Description: Fits semiparametric regression models to panel count data, that
+    is, to recurrent event processes observed only at intermittent examination
+    times, allowing covariates to be time-varying. The proportional rate model
+    is fitted by nonparametric maximum likelihood through an
+    expectation-maximization algorithm under a working Poisson assumption,
+    while inference does not require that assumption to hold; two
+    computationally inexpensive covariance estimators are provided, a robust
+    sandwich estimator that remains consistent when the Poisson assumption
+    fails and an efficient information estimator that is a fast substitute for
+    profile likelihood when it holds, with the profile likelihood estimator
+    available for comparison. The proportional means model is fitted by the
+    estimating equation of Hu, Sun and Wei (2003)
+    <doi:10.1111/1467-9469.00316>. Methods for the rate model are described in
+    Sun, Guo, Li, Tu and Sun (2024) <doi:10.3150/23-BEJ1713>.
 License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 4.1.0)

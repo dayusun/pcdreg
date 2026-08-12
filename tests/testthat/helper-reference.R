@@ -92,6 +92,50 @@ ref_covariance <- function(d, beta, lambda) {
   list(Omega = Omega / d$n, S = crossprod(scores) / d$n, scores = scores)
 }
 
+# The means model of Hu, Sun and Wei (2003), again straight from the equations:
+# Newton iteration on U(beta) = sum_r cN_r (X_r - xbar_k(r)), over examinations
+# rather than over grid times.
+ref_mean <- function(d, maxit = 100L, reltol = 1e-12) {
+  Xm <- t(d$exam_X)
+  K <- d$K
+  p <- ncol(Xm)
+  grid <- d$exam_grid
+  beta <- numeric(p)
+
+  for (it in seq_len(maxit)) {
+    eta <- as.vector(exp(Xm %*% beta))
+    S0 <- group_sum(eta, grid, K)
+    S1 <- group_sum(Xm * eta, grid, K)
+    xbar <- S1 / ifelse(S0 > 0, S0, 1)
+    if (p == 1L) xbar <- matrix(xbar, ncol = 1L)
+
+    centred <- Xm - xbar[grid + 1L, , drop = FALSE]
+    U <- colSums(d$cN * centred)
+    wk <- group_sum(d$cN, grid, K)
+
+    H <- matrix(0, p, p)
+    for (r in seq_len(nrow(Xm))) {
+      k <- grid[r] + 1L
+      if (S0[k] > 0 && wk[k] > 0) {
+        H <- H + (wk[k] / S0[k]) * eta[r] * tcrossprod(Xm[r, ])
+      }
+    }
+    for (k in seq_len(K)) {
+      if (wk[k] > 0) H <- H - wk[k] * tcrossprod(xbar[k, ])
+    }
+
+    beta_new <- beta + solve(H, U)
+    crit <- max(abs(beta_new - beta)) / (max(abs(beta)) + reltol)
+    beta <- beta_new
+    if (crit < reltol) break
+  }
+
+  eta <- as.vector(exp(Xm %*% beta))
+  S0 <- group_sum(eta, grid, K)
+  mu <- ifelse(S0 > 0, group_sum(d$cN, grid, K) / S0, 0)
+  list(beta = beta, mu = mu, iterations = it)
+}
+
 # Observed data log likelihood, summed over subjects.
 ref_loglik <- function(d, beta, lambda) {
   eta <- as.vector(exp(t(d$X) %*% beta))

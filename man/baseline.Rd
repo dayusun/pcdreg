@@ -2,27 +2,30 @@
 % Please edit documentation in R/methods.R
 \name{baseline}
 \alias{baseline}
-\alias{baseline.panelrate}
-\title{Estimated baseline cumulative rate}
+\alias{baseline.pcdfit}
+\title{Estimated baseline function}
 \usage{
 baseline(object, ...)
 
-\method{baseline}{panelrate}(object, ...)
+\method{baseline}{pcdfit}(object, ...)
 }
 \arguments{
-\item{object}{A fitted \code{\link[=panelrate]{panelrate()}} model.}
+\item{object}{A fitted \code{\link[=panelrate]{panelrate()}} or \code{\link[=panelmean]{panelmean()}} model.}
 
 \item{...}{Ignored.}
 }
 \value{
-A data frame with one row per examination time on the pooled grid,
-giving the jump size and the cumulative baseline rate \eqn{\Lambda(t)}.
+A data frame with one row per examination time on the pooled grid.
+For \code{\link[=panelrate]{panelrate()}} it gives the jump sizes and the cumulative baseline rate
+\eqn{\Lambda(t)}; for \code{\link[=panelmean]{panelmean()}} it gives the baseline mean
+\eqn{\mu(t)}, which is not constrained to increase.
 }
 \description{
-Estimated baseline cumulative rate
+Estimated baseline function
 }
 \examples{
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
 head(baseline(panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, d)))
+head(baseline(panelmean(PanelCount(id, tstart, tstop, count) ~ x1 + x2, d)))
 }

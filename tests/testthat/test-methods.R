@@ -19,7 +19,7 @@ test_that("the extractor methods agree with the fit", {
 
 test_that("summary reports the covariance it was asked for", {
   s <- summary(fit)
-  expect_s3_class(s, "summary.panelrate")
+  expect_s3_class(s, "summary.pcdfit")
   expect_equal(s$coefficients[, "Std. Error"],
                sqrt(diag(vcov(fit, "robust"))), ignore_attr = TRUE)
   expect_equal(summary(fit, "information")$coefficients[, "Std. Error"],

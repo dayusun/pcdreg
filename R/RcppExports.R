@@ -13,3 +13,7 @@ profile_gradient_cpp <- function(X, subj, grid, panel, dN, panelsubj, n, K, beta
     .Call(`_pcdreg_profile_gradient_cpp`, X, subj, grid, panel, dN, panelsubj, n, K, beta, lambda, h, maxit, reltol)
 }
 
+mean_fit_cpp <- function(X, subj, grid, cN, n, K, beta, maxit, reltol) {
+    .Call(`_pcdreg_mean_fit_cpp`, X, subj, grid, cN, n, K, beta, maxit, reltol)
+}
+

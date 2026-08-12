@@ -2,12 +2,15 @@
 % Please edit documentation in R/predict.R
 \name{predict.panelrate}
 \alias{predict.panelrate}
-\title{Predictions from a proportional rate model}
+\alias{predict.panelmean}
+\title{Predictions from a panel count model}
 \usage{
 \method{predict}{panelrate}(object, newdata, type = c("lp", "mean"), ...)
+
+\method{predict}{panelmean}(object, newdata, type = c("lp", "mean"), ...)
 }
 \arguments{
-\item{object}{A fitted \code{\link[=panelrate]{panelrate()}} model.}
+\item{object}{A fitted \code{\link[=panelrate]{panelrate()}} or \code{\link[=panelmean]{panelmean()}} model.}
 
 \item{newdata}{Data to predict for. Defaults to the data the model was fitted
 to. For \code{type = "mean"} it must also contain the variables in the
@@ -15,9 +18,10 @@ to. For \code{type = "mean"} it must also contain the variables in the
 covariate trajectory; the counts themselves are ignored.}
 
 \item{type}{\code{"lp"} returns the linear predictor \eqn{\beta' X(t)} for each
-row. \code{"mean"} returns the predicted mean number of events
-\eqn{E[N(t) \mid X] = \int_0^t \exp(\beta' X(s)) d\hat\Lambda(s)} at every
-fitted examination time within each subject's follow-up.}
+row. \code{"mean"} returns the predicted mean number of events at every fitted
+examination time within each subject's follow-up:
+\eqn{\int_0^t \exp(\beta' X(s)) \, d\hat\Lambda(s)} for \code{\link[=panelrate]{panelrate()}}, and
+\eqn{\hat\mu(t) \exp(\beta' X(t))} for \code{\link[=panelmean]{panelmean()}}.}
 
 \item{...}{Ignored.}
 }
@@ -27,13 +31,14 @@ For \code{type = "lp"}, a numeric vector with one element per row of
 \code{mean}.
 }
 \description{
-Predictions from a proportional rate model
+Predictions from a panel count model
 }
 \details{
-Because the rate model constrains only \eqn{\exp(\beta' X(t)) d\Lambda(t)} to
-be positive, the predicted mean is automatically non-decreasing in \eqn{t}
-even when covariates fluctuate, which is the practical advantage of the rate
-model over the proportional means model.
+The rate model's predicted mean is non-decreasing in \eqn{t} by construction,
+because it integrates a positive quantity. The means model's is not: it is a
+fitted \eqn{\hat\mu(t)} rescaled by a covariate value that may itself move up
+and down, so a predicted mean count that falls is possible and is the
+practical drawback of that model with time-varying covariates.
 }
 \examples{
 set.seed(1)

@@ -42,6 +42,9 @@ only $\exp(\beta'X(t))\,d\Lambda(t)$ to be positive, so predicted means increase
 automatically, and $\exp(\beta'X(t))$ carries the same instantaneous
 relative-risk reading that a hazard ratio has in survival analysis.
 
+The means model is nonetheless the established alternative, and the package
+fits it too, with `panelmean()`. The last section compares the two.
+
 ## Getting data into shape
 
 The response is built by `PanelCount()`, which plays the role `Surv()` plays in
@@ -216,6 +219,51 @@ plot(one$time, one$mean, type = "s", xlab = "Time",
 The curve is non-decreasing even though `x1` steps up or down part way through
 follow-up, which is the structural advantage of the rate model.
 
+## The means model
+
+`panelmean()` fits the other classical model for these data,
+
+$$E[N(t) \mid X(t)] = \mu(t)\exp(\beta'X(t)),$$
+
+by the estimating equation of Hu, Sun and Wei (2003). It is the comparator used
+in the application of the paper, and it is cheap: only the examination times
+enter, so none of the grid expansion the rate model needs is required.
+
+```{r meanmodel}
+mfit <- panelmean(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+summary(mfit)
+```
+
+There is no likelihood behind this estimator, so there is no log likelihood to
+report and `vcov()` offers only the sandwich.
+
+Two things are worth care when reading the two fits side by side.
+
+```{r compare}
+cbind(rate = coef(fit), mean = coef(mfit))
+```
+
+First, these numbers are not two estimates of one quantity. With time-varying
+covariates the models are not reparametrisations of each other: $\beta$ acts on
+the instantaneous rate in one and on the cumulative mean in the other, so they
+answer different questions and there is no reason for them to agree. The data
+here were generated from the rate model, which is why `panelrate()` recovers the
+values used to simulate them and `panelmean()` does not.
+
+Second, nothing constrains the fitted $\hat\mu$ to increase:
+
+```{r monotone}
+mu <- baseline(mfit)$mean
+c(increasing = !is.unsorted(mu), decreases_at = sum(diff(mu) < 0))
+```
+
+That is the difficulty with the means model this package's rate model is meant
+to avoid, and it is visible here on ordinary simulated data rather than only in
+principle. A mean function that falls is not a numerical failure; it is what the
+estimator returns when covariate values move up and down, and it is why
+predicted means from `panelmean()` can decrease while those from `panelrate()`
+cannot.
+
 ## Computation
 
 The EM algorithm converges linearly and, on this problem, slowly: plain EM can
@@ -238,8 +286,16 @@ because the covariate trajectory of every subject has to be evaluated at every
 grid time within their follow-up. Examination times that tie across subjects,
 which is what scheduled visits produce in practice, keep that grid small.
 
-## Reference
+## References
 
 Sun, D., Guo, Y., Li, Y., Tu, W. and Sun, J. (2024). A robust approach for
 regression analysis of panel count data. *Bernoulli* **30**(4), 3251--3275.
 [doi:10.3150/23-BEJ1713](https://doi.org/10.3150/23-BEJ1713)
+
+Hu, X. J., Sun, J. and Wei, L. J. (2003). Regression parameter estimation from
+panel counts. *Scandinavian Journal of Statistics* **30**(1), 25--43.
+[doi:10.1111/1467-9469.00316](https://doi.org/10.1111/1467-9469.00316)
+
+Varadhan, R. and Roland, C. (2008). Simple and globally convergent methods for
+accelerating the convergence of any EM algorithm. *Scandinavian Journal of
+Statistics* **35**, 335--353.

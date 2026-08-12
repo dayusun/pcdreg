@@ -1,16 +1,19 @@
 # Turn a PanelCount response and a model matrix into the arrays the C++ core
-# expects.
+# expects, after checking that the data really describe panel counts.
 #
-# The likelihood involves the covariate trajectory evaluated at every pooled
-# examination time up to a subject's own last examination, so the user's rows
-# (which are intervals of constant covariates) are expanded onto that pooled
-# grid.  Each expanded row is one (subject, grid time) pair, that is, one (i, k)
-# with Delta_ik = 1.
-prepare_panel <- function(y, X) {
+# Two layouts come out of this. The examination level arrays have one row per
+# (subject, examination) and are what the mean model needs. The expanded arrays
+# additionally have one row per (subject, grid time) still under observation,
+# which is what the rate model needs, because its likelihood evaluates each
+# subject's covariate trajectory at every pooled examination time within their
+# follow-up. Building the expanded arrays costs O(n^2 J) work, so `expand`
+# skips it for the mean model.
+prepare_panel <- function(y, X, expand = TRUE) {
   ord <- order(y[, "id"], y[, "tstop"])
   id <- y[ord, "id"]
   tstart <- y[ord, "tstart"]
   tstop <- y[ord, "tstop"]
+  count <- y[ord, "count"]
   exam <- y[ord, "exam"] == 1
   X <- X[ord, , drop = FALSE]
 
@@ -49,7 +52,7 @@ prepare_panel <- function(y, X) {
   }
 
   # Follow-up ends at the last examination; later intervals say nothing about
-  # the model, because the likelihood only runs over j = 1, ..., J_i.
+  # either model, because both sum only over j = 1, ..., J_i.
   subject_f <- factor(subject, levels = seq_len(n))
   last_exam <- as.numeric(tapply(tstop[exam], subject_f[exam], max))
   keep <- tstart < last_exam[subject] - tol
@@ -59,39 +62,56 @@ prepare_panel <- function(y, X) {
     subject <- subject[keep]
     subject_f <- subject_f[keep]
     tstop <- tstop[keep]
+    count <- count[keep]
+    exam <- exam[keep]
     X <- X[keep, , drop = FALSE]
   }
 
-  times <- sort(unique(y[y[, "exam"] == 1, "tstop"]))
+  times <- sort(unique(tstop[exam]))
   K <- length(times)
+
+  # Examination level arrays, already ordered by subject and then by time.
+  # The covariate value at an examination is the one on that very row, since a
+  # row's interval (tstart, tstop] contains its own tstop.
+  at <- which(exam)
+  exam_subj <- subject[at]
+  exam_grid <- match(tstop[at], times)
+  dN <- count[at]
+  J <- tabulate(exam_subj, n)
+
+  out <- list(
+    exam_X = t(X[at, , drop = FALSE]),
+    exam_subj = as.integer(exam_subj) - 1L,
+    exam_grid = as.integer(exam_grid) - 1L,
+    dN = as.numeric(dN),
+    cN = as.numeric(stats::ave(dN, exam_subj, FUN = cumsum)),
+    n = n,
+    K = K,
+    times = times,
+    labels = labels,
+    nexam = length(at)
+  )
+  if (!expand) return(out)
 
   # One expanded row per grid time still under observation.
   nactive <- findInterval(last_exam, times)
   subj_exp <- rep.int(seq_len(n), nactive)
   grid_exp <- sequence(nactive)
 
-  # Examination rows, ordered to match the panel intervals they close.
-  exam_rows <- y[y[, "exam"] == 1, , drop = FALSE]
-  exam_subject <- match(exam_rows[, "id"], used)
-  exam_ord <- order(exam_subject, exam_rows[, "tstop"])
-  exam_subject <- exam_subject[exam_ord]
-  exam_grid <- match(exam_rows[exam_ord, "tstop"], times)
-
-  # Mark the expanded rows that sit at one of their own subject's examinations.
+  # Mark the expanded rows sitting at one of their own subject's examinations.
   key <- function(i, k) (as.numeric(i) - 1) * K + k
-  is_exam <- key(subj_exp, grid_exp) %in% key(exam_subject, exam_grid)
+  is_exam <- key(subj_exp, grid_exp) %in% key(exam_subj, exam_grid)
 
   # Examination interval index j within subject: one more than the number of
   # that subject's earlier examinations.
   before <- cumsum(is_exam) - is_exam
   j_within <- before - rep.int(before[!duplicated(subj_exp)], nactive) + 1L
-
-  J <- tabulate(exam_subject, n)
   panel <- cumsum(c(0L, J))[subj_exp] + j_within
 
   # The covariate row in force at each grid time, located within each subject.
   rows_by_subject <- split(seq_along(subject), subject_f)
-  times_by_subject <- split(times[grid_exp], factor(subj_exp, levels = seq_len(n)))
+  times_by_subject <- split(times[grid_exp],
+                            factor(subj_exp, levels = seq_len(n)))
   row_index <- unlist(Map(
     function(rows, query) {
       rows[findInterval(query, tstop[rows], left.open = TRUE) + 1L]
@@ -103,17 +123,11 @@ prepare_panel <- function(y, X) {
          "subject.", call. = FALSE)
   }
 
-  list(
+  c(out, list(
     X = t(X[row_index, , drop = FALSE]),
     subj = as.integer(subj_exp) - 1L,
     grid = as.integer(grid_exp) - 1L,
     panel = as.integer(panel) - 1L,
-    dN = as.numeric(exam_rows[exam_ord, "count"]),
-    panelsubj = as.integer(rep.int(seq_len(n), J)) - 1L,
-    n = n,
-    K = K,
-    times = times,
-    labels = labels,
-    nexam = nrow(exam_rows)
-  )
+    panelsubj = as.integer(rep.int(seq_len(n), J)) - 1L
+  ))
 }

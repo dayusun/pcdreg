@@ -4,14 +4,24 @@
 
 Regression analysis of **panel count data**: recurrent events observed only at
 intermittent examination times, so that you know how many events happened
-between visits but not when. `pcdreg` fits the semiparametric proportional
-rate model
+between visits but not when. `pcdreg` fits the two semiparametric models used
+for these data, allowing the covariates to vary over time.
 
-$$E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t),$$
+| | Model | Fitted by |
+|---|---|---|
+| `panelrate()` | $E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t)$ | nonparametric maximum likelihood, via EM |
+| `panelmean()` | $E[N(t) \mid X(t)] = \mu(t)\exp(\beta' X(t))$ | estimating equations |
 
-allowing the covariates to vary over time, and implements the estimation and
-covariance methods of Sun, Guo, Li, Tu and Sun (2024),
-[*Bernoulli* **30**(4), 3251--3275](https://doi.org/10.3150/23-BEJ1713).
+`panelrate()` implements the estimation and covariance methods of Sun, Guo, Li,
+Tu and Sun (2024), [*Bernoulli* **30**(4),
+3251--3275](https://doi.org/10.3150/23-BEJ1713); `panelmean()` implements Hu,
+Sun and Wei (2003), [*Scandinavian Journal of Statistics* **30**(1),
+25--43](https://doi.org/10.1111/1467-9469.00316), the comparator used in that
+paper's application.
+
+With time-varying covariates the two are not reparametrisations of each other,
+so their coefficients answer different questions rather than estimating one
+common quantity.
 
 ## Why the rate model
 
@@ -58,7 +68,7 @@ summary(fit)
 #> panelrate(formula = PanelCount(id, tstart, tstop, count) ~ x1 + 
 #>     x2, data = d)
 #> 
-#> Proportional rate model for panel count data
+#> Proportional rate model for panel count data 
 #> Standard errors: robust sandwich
 #> 
 #>    Estimate Std. Error z value Pr(>|z|)
@@ -131,6 +141,32 @@ head(predict(fit, d, type = "mean"))
 #> 4  1 0.04 0.1810132
 #> 5  1 0.05 0.8660341
 #> 6  1 0.06 0.8660341
+```
+
+## The means model
+
+`panelmean()` takes the same formula and returns an object supporting the same
+methods. It needs only the examination times, so it is much cheaper to fit.
+
+
+``` r
+mfit <- panelmean(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+cbind(rate = coef(fit), mean = coef(mfit))
+#>         rate       mean
+#> x1  1.181028  0.6398457
+#> x2 -1.028303 -0.9919493
+```
+
+Nothing constrains its fitted mean function to increase, and with covariates
+that fluctuate it generally does not — the drawback of the means model that
+motivates the rate model:
+
+
+``` r
+mu <- baseline(mfit)$mean
+c(increasing = !is.unsorted(mu), decreases_at = sum(diff(mu) < 0))
+#>   increasing decreases_at 
+#>            0           98
 ```
 
 ## Citation

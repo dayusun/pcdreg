@@ -125,18 +125,15 @@ Rcpp::List covariance_cpp(const arma::mat& X, const arma::uvec& subj,
   const arma::uword p = d.p();
 
   arma::vec eta;
-  if (!relative_rate(d, beta, eta)) {
+  if (!relative_rate(d.X, beta, eta)) {
     Rcpp::stop("The linear predictor overflowed while computing the "
                "covariance; check for badly scaled covariates.");
   }
   arma::vec S0;
   arma::mat S1;
-  risk_sums(d, eta, S0, S1);
+  risk_sums(d.X, d.grid, d.K, eta, S0, S1);
 
-  arma::mat xbar(p, d.K, arma::fill::zeros);
-  for (arma::uword k = 0; k < d.K; ++k) {
-    if (invertible(S0(k))) xbar.col(k) = S1.col(k) / S0(k);
-  }
+  const arma::mat xbar = covariate_means(S0, S1);
 
   const arma::vec denom = panel_totals(d, eta, lambda);
   const arma::vec What = estep(d, eta, lambda, denom);
@@ -207,13 +204,13 @@ Rcpp::List profile_gradient_cpp(const arma::mat& X, const arma::uvec& subj,
   // Baseline pl_i(betahat).  Re-solving for lambda costs one or two iterations
   // and keeps the baseline on the same footing as the perturbed fits.
   arma::vec eta;
-  if (!relative_rate(d, beta, eta)) {
+  if (!relative_rate(d.X, beta, eta)) {
     Rcpp::stop("The linear predictor overflowed while computing the profile "
                "likelihood; check for badly scaled covariates.");
   }
   arma::vec S0;
   arma::mat S1;
-  risk_sums(d, eta, S0, S1);
+  risk_sums(d.X, d.grid, d.K, eta, S0, S1);
   arma::uword it = 0;
   bool ok = false;
   arma::vec lam = profile_lambda(d, eta, S0, lambda, maxit, reltol, it, ok);
@@ -225,11 +222,11 @@ Rcpp::List profile_gradient_cpp(const arma::mat& X, const arma::uvec& subj,
     Rcpp::checkUserInterrupt();
     arma::vec beta_l = beta;
     beta_l(l) += h;
-    if (!relative_rate(d, beta_l, eta)) {
+    if (!relative_rate(d.X, beta_l, eta)) {
       Rcpp::stop("The linear predictor overflowed while perturbing the "
                  "coefficients for the profile likelihood.");
     }
-    risk_sums(d, eta, S0, S1);
+    risk_sums(d.X, d.grid, d.K, eta, S0, S1);
     lam = profile_lambda(d, eta, S0, lambda, maxit, reltol, it, ok);
     iterations(l + 1) = it;
     converged(l + 1) = ok ? 1 : 0;

@@ -8,16 +8,21 @@
 #include <limits>
 #include <vector>
 
-// Core routines for the semiparametric proportional rate model
+// Core routines for the two semiparametric regression models this package
+// fits to panel count data.
 //
-//     E[dN(t) | X(t)] = exp(beta' X(t)) dLambda(t)
+//   Rate model   E[dN(t) | X(t)] = exp(beta' X(t)) dLambda(t)
+//   Mean model   E[N(t)  | X(t)] = mu(t) exp(beta' X(t))
 //
-// fitted by the EM algorithm of Sun, Guo, Li, Tu and Sun (2024),
-// Bernoulli 30(4), doi:10.3150/23-BEJ1713.  Equation numbers in the comments
-// refer to that paper.
+// The rate model is fitted by the EM algorithm of Sun, Guo, Li, Tu and Sun
+// (2024), Bernoulli 30(4), doi:10.3150/23-BEJ1713; equation numbers in the
+// comments below refer to that paper.  The mean model is fitted by the
+// estimating equation of Hu, Sun and Wei (2003), Biometrika 90, 831-845.
 //
 // Lambda is a step function with jump lambda_k at the pooled distinct
-// examination time t_k, k = 1, ..., K.
+// examination time t_k, k = 1, ..., K; mu is estimated at those same times.
+//
+// The two share the weighted score kernel below, and differ in the weights.
 
 namespace pcdreg {
 
@@ -58,15 +63,15 @@ struct Parameters {
 // swamps the arithmetic: on a machine with a threaded OpenBLAS this made fits
 // roughly forty times slower, nearly all of it system time.
 
-// eta_r = exp(beta' X_i(t_k)).  Returns false if the linear predictor overflows,
+// eta_r = exp(beta' X_r).  Returns false if the linear predictor overflows,
 // which can happen at a trial point proposed by the accelerator.
-inline bool relative_rate(const PanelData& d, const arma::vec& beta,
+inline bool relative_rate(const arma::mat& X, const arma::vec& beta,
                           arma::vec& eta) {
-  const arma::uword p = d.p(), M = d.M();
+  const arma::uword p = X.n_rows, M = X.n_cols;
   eta.set_size(M);
   const double* b = beta.memptr();
   for (arma::uword r = 0; r < M; ++r) {
-    const double* x = d.X.colptr(r);
+    const double* x = X.colptr(r);
     double lp = 0.0;
     for (arma::uword j = 0; j < p; ++j) lp += b[j] * x[j];
     eta(r) = std::exp(lp);
@@ -99,18 +104,28 @@ inline void add_outer_upper(double* H, const double* x, arma::uword p,
 // S0_k = sum_i Delta_ik eta_ik and S1_k = sum_i Delta_ik eta_ik X_i(t_k),
 // the unnormalised versions of S^(0) and S^(1) (the factor 1/n cancels in
 // every ratio in which they are used).
-inline void risk_sums(const PanelData& d, const arma::vec& eta,
-                      arma::vec& S0, arma::mat& S1) {
-  const arma::uword p = d.p();
-  S0.zeros(d.K);
-  S1.zeros(p, d.K);
-  for (arma::uword r = 0; r < d.M(); ++r) {
-    const arma::uword k = d.grid(r);
+inline void risk_sums(const arma::mat& X, const arma::uvec& grid, arma::uword K,
+                      const arma::vec& eta, arma::vec& S0, arma::mat& S1) {
+  const arma::uword p = X.n_rows;
+  S0.zeros(K);
+  S1.zeros(p, K);
+  for (arma::uword r = 0; r < X.n_cols; ++r) {
+    const arma::uword k = grid(r);
     S0(k) += eta(r);
-    const double* x = d.X.colptr(r);
+    const double* x = X.colptr(r);
     double* s = S1.colptr(k);
     for (arma::uword j = 0; j < p; ++j) s[j] += eta(r) * x[j];
   }
+}
+
+// The covariate mean at each grid time, weighted by the relative rate:
+// xbar_k = S1_k / S0_k, and zero where nobody is at risk.
+inline arma::mat covariate_means(const arma::vec& S0, const arma::mat& S1) {
+  arma::mat xbar(S1.n_rows, S1.n_cols, arma::fill::zeros);
+  for (arma::uword k = 0; k < S1.n_cols; ++k) {
+    if (invertible(S0(k))) xbar.col(k) = S1.col(k) / S0(k);
+  }
+  return xbar;
 }
 
 // Total intensity of each examination interval,
@@ -156,49 +171,53 @@ inline arma::vec mstep_lambda(const PanelData& d, const arma::vec& What,
   return lambda;
 }
 
-// The M-step score U(beta) and its negative derivative -Udot(beta), where
+// A weighted score U(beta) and its negative derivative -Udot(beta),
 //
-//     U     = sum_{i,k} What_ik (X_i(t_k) - xbar_k),
-//     -Udot = sum_{i,k} What_ik { S2_k / S0_k - xbar_k xbar_k' },
+//     U     = sum_r weight_r (X_r - xbar_k(r)),
+//     -Udot = sum_r weight_r { S2_k / S0_k - xbar_k xbar_k' },
 //
-// with xbar_k = S1_k / S0_k the covariate mean at t_k weighted by the relative
-// rate.  -Udot is the observed information of the M-step and is positive
-// semidefinite, so the Newton step is beta + (-Udot)^{-1} U.
+// with xbar_k = S1_k / S0_k.  Since d(xbar_k)/dbeta' is exactly the bracketed
+// term, -Udot is a weighted covariance of the covariates and so is positive
+// semidefinite, and the Newton step is beta + (-Udot)^{-1} U.
+//
+// Both models in the package reduce to this same kernel and differ only in the
+// weights.  The rate model's M-step uses the posterior counts What_ik, so that
+// U is the score of the profiled complete data likelihood; the mean model's
+// estimating equation uses the observed cumulative counts N_i(T_ij).
 //
 // The p x p x K array S2 is never formed: sum_k (w_k / S0_k) S2_k is
 // accumulated in a single pass over rows.
-inline void mstep_score(const PanelData& d, const arma::vec& eta,
-                        const arma::vec& What, const arma::vec& S0,
-                        const arma::mat& S1, arma::vec& U, arma::mat& negUdot) {
-  const arma::uword p = d.p();
-  arma::vec w(d.K, arma::fill::zeros);   // w_k = sum_i What_ik
-  arma::vec xw(p, arma::fill::zeros);    // sum_{i,k} What_ik X_i(t_k)
-  for (arma::uword r = 0; r < d.M(); ++r) {
-    w(d.grid(r)) += What(r);
-    const double* x = d.X.colptr(r);
-    for (arma::uword j = 0; j < p; ++j) xw(j) += What(r) * x[j];
+inline void weighted_score(const arma::mat& X, const arma::uvec& grid,
+                           arma::uword K, const arma::vec& eta,
+                           const arma::vec& weight, const arma::vec& S0,
+                           const arma::mat& S1, arma::vec& U,
+                           arma::mat& negUdot) {
+  const arma::uword p = X.n_rows, M = X.n_cols;
+  arma::vec w(K, arma::fill::zeros);   // total weight at each grid time
+  arma::vec xw(p, arma::fill::zeros);  // sum_r weight_r X_r
+  for (arma::uword r = 0; r < M; ++r) {
+    w(grid(r)) += weight(r);
+    const double* x = X.colptr(r);
+    for (arma::uword j = 0; j < p; ++j) xw(j) += weight(r) * x[j];
   }
 
-  arma::mat xbar(p, d.K, arma::fill::zeros);
-  for (arma::uword k = 0; k < d.K; ++k) {
-    if (invertible(S0(k))) xbar.col(k) = S1.col(k) / S0(k);
-  }
+  const arma::mat xbar = covariate_means(S0, S1);
 
   U = xw;
-  for (arma::uword k = 0; k < d.K; ++k) {
+  for (arma::uword k = 0; k < K; ++k) {
     const double* xb = xbar.colptr(k);
     for (arma::uword j = 0; j < p; ++j) U(j) -= w(k) * xb[j];
   }
 
   negUdot.zeros(p, p);
   double* H = negUdot.memptr();
-  for (arma::uword r = 0; r < d.M(); ++r) {
-    const arma::uword k = d.grid(r);
+  for (arma::uword r = 0; r < M; ++r) {
+    const arma::uword k = grid(r);
     if (invertible(S0(k)) && w(k) > 0.0) {
-      add_outer_upper(H, d.X.colptr(r), p, (w(k) / S0(k)) * eta(r));
+      add_outer_upper(H, X.colptr(r), p, (w(k) / S0(k)) * eta(r));
     }
   }
-  for (arma::uword k = 0; k < d.K; ++k) {
+  for (arma::uword k = 0; k < K; ++k) {
     if (w(k) > 0.0) add_outer_upper(H, xbar.colptr(k), p, -w(k));
   }
   negUdot = arma::symmatu(negUdot);
@@ -248,10 +267,10 @@ inline double rel_change(const arma::vec& from, const arma::vec& to,
 // viable, which the accelerator uses to reject a trial point.
 inline bool em_step(const PanelData& d, const Parameters& cur, Parameters& out) {
   arma::vec eta;
-  if (!relative_rate(d, cur.beta, eta)) return false;
+  if (!relative_rate(d.X, cur.beta, eta)) return false;
   arma::vec S0;
   arma::mat S1;
-  risk_sums(d, eta, S0, S1);
+  risk_sums(d.X, d.grid, d.K, eta, S0, S1);
 
   arma::vec denom = panel_totals(d, eta, cur.lambda);
   arma::vec What = estep(d, eta, cur.lambda, denom);
@@ -263,7 +282,7 @@ inline bool em_step(const PanelData& d, const Parameters& cur, Parameters& out) 
     What = estep(d, eta, out.lambda, denom);
     arma::vec U;
     arma::mat negUdot;
-    mstep_score(d, eta, What, S0, S1, U, negUdot);
+    weighted_score(d.X, d.grid, d.K, eta, What, S0, S1, U, negUdot);
     arma::vec step;
     if (!safe_solve(negUdot, U, step)) return false;
     out.beta = cur.beta + step;
@@ -275,7 +294,7 @@ inline bool em_step(const PanelData& d, const Parameters& cur, Parameters& out) 
 // viable.  Used to guard the accelerated steps.
 inline double loglik_at(const PanelData& d, const Parameters& s) {
   arma::vec eta;
-  if (!relative_rate(d, s.beta, eta)) {
+  if (!relative_rate(d.X, s.beta, eta)) {
     return -std::numeric_limits<double>::infinity();
   }
   return arma::accu(subject_loglik(d, panel_totals(d, eta, s.lambda)));
