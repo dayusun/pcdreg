@@ -16,8 +16,8 @@ this shape.
 Write $N_{i}(t)$ for the number of events subject $i$ has experienced by
 time $t$, observed at times $T_{i1} < \ldots < T_{iJ_{i}}$, and
 $\Delta N_{ij}$ for the count in $(T_{i,j - 1},T_{ij}\rbrack$.
-[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-fits the proportional rate model
+[`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) fits the
+proportional rate model
 
 $$E\left\lbrack dN(t) \mid X(t) \right\rbrack = \exp\left( \beta\prime X(t) \right)\, d\Lambda(t),$$
 
@@ -37,9 +37,8 @@ $\exp\left( \beta\prime X(t) \right)$ carries the same instantaneous
 relative-risk reading that a hazard ratio has in survival analysis.
 
 The means model is nonetheless the established alternative, and the
-package fits it too, with
-[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md).
-The last section compares the two.
+package fits it too, with `pcdreg(model = "mean")`. The last section
+compares the two.
 
 ## Getting data into shape
 
@@ -91,8 +90,8 @@ model can use and the means model cannot.
 
 Within a subject the intervals must be contiguous, start at zero, and
 end at an examination.
-[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-checks all of this and says which subject is at fault when it fails.
+[`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) checks
+all of this and says which subject is at fault when it fails.
 
 ### Converting data held in the older layout
 
@@ -105,7 +104,7 @@ examination row does not:
 ``` r
 new <- old
 new$count[old$event == 0] <- NA
-panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
+pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
 ```
 
 ## Fitting
@@ -113,12 +112,11 @@ panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
 ``` r
 set.seed(1)
 d <- r_panel_count(200, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
 #> 
 #> Call:
-#> panelrate(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, 
-#>     data = d)
+#> pcdreg(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #> 
 #> Proportional rate model for panel count data 
 #> Standard errors: robust sandwich
@@ -133,8 +131,8 @@ summary(fit)
 
 There is no intercept: a constant in $X$ would be indistinguishable from
 a rescaling of $\Lambda$, so
-[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-drops it and reports the baseline separately.
+[`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) drops it
+and reports the baseline separately.
 
 Fitting maximises the likelihood implied by a nonhomogeneous Poisson
 process, using an EM algorithm that treats the unobserved per-time
@@ -188,7 +186,7 @@ van der Vaart. It is included for comparison with the literature, and
 because it is expensive it is computed only on request:
 
 ``` r
-pfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
+pfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
                   profile = TRUE)
 rbind(information = sqrt(diag(vcov(pfit, "information"))),
       profile     = sqrt(diag(vcov(pfit, "profile"))))
@@ -215,7 +213,7 @@ Poisson structure.
 ``` r
 set.seed(2)
 od <- r_panel_count(200, beta = c(1, -1), frailty = 1)
-odfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
+odfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
 rbind(robust = sqrt(diag(vcov(odfit, "robust"))),
       information = sqrt(diag(vcov(odfit, "information"))))
 #>                     x1         x2
@@ -279,8 +277,7 @@ through follow-up, which is the structural advantage of the rate model.
 
 ## The means model
 
-[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
-fits the other classical model for these data,
+`pcdreg(model = "mean")` fits the other classical model for these data,
 
 $$E\left\lbrack N(t) \mid X(t) \right\rbrack = \mu(t)\exp\left( \beta\prime X(t) \right),$$
 
@@ -290,12 +287,12 @@ the examination times enter, so none of the grid expansion the rate
 model needs is required.
 
 ``` r
-mfit <- panelmean(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+mfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d, model = "mean")
 summary(mfit)
 #> 
 #> Call:
-#> panelmean(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, 
-#>     data = d)
+#> pcdreg(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, data = d, 
+#>     model = "mean")
 #> 
 #> Proportional means model for panel count data 
 #> Standard errors: robust sandwich
@@ -327,10 +324,8 @@ other: $\beta$ acts on the instantaneous rate in one and on the
 cumulative mean in the other, so they answer different questions and
 there is no reason for them to agree. The data here were generated from
 the rate model, which is why
-[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-recovers the values used to simulate them and
-[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
-does not.
+[`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) recovers
+the values used to simulate them and `pcdreg(model = "mean")` does not.
 
 Second, nothing constrains the fitted $\widehat{\mu}$ to increase:
 
@@ -345,18 +340,16 @@ That is the difficulty with the means model this package’s rate model is
 meant to avoid, and it is visible here on ordinary simulated data rather
 than only in principle. A mean function that falls is not a numerical
 failure; it is what the estimator returns when covariate values move up
-and down, and it is why predicted means from
-[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
+and down, and it is why predicted means from `pcdreg(model = "mean")`
 can decrease while those from
-[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-cannot.
+[`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) cannot.
 
 ## Computation
 
 The EM algorithm converges linearly and, on this problem, slowly: plain
 EM can still be moving in the fifth decimal place after tens of
 thousands of passes.
-[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
+[`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md)
 therefore extrapolates the iterations using the SQUAREM scheme of
 Varadhan and Roland, keeping an extrapolated point only when a
 stabilising EM pass from it does at least as well on the observed data
@@ -371,7 +364,7 @@ c(iterations = fit$iterations, EM_passes = fit$passes,
 ```
 
 Set `accelerate = FALSE` in
-[`panelrate_control()`](https://www.sundayu.me/pcdreg/reference/panelrate_control.md)
+[`pcdreg_control()`](https://www.sundayu.me/pcdreg/reference/pcdreg_control.md)
 to recover plain EM.
 
 The dominant cost is the size of the pooled grid of distinct examination

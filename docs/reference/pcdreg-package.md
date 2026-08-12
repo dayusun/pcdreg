@@ -3,19 +3,21 @@
 Panel count data arise when a recurrent event process is observed only
 at intermittent examination times, so that the number of events between
 consecutive examinations is known but the event times themselves are
-not.
-[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-fits the semiparametric proportional rate model \$\$E\[dN(t) \mid X(t)\]
-= \exp(\beta' X(t)) \\ d\Lambda(t)\$\$ to such data, allowing the
-covariates \\X(t)\\ to vary over time.
+not. [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md)
+fits either of the two standard semiparametric models to such data,
+allowing the covariates \\X(t)\\ to vary over time: \$\$\textrm{rate:}
+\quad E\[dN(t) \mid X(t)\] = \exp(\beta' X(t)) \\ d\Lambda(t)\$\$
+\$\$\textrm{mean:} \quad E\[N(t) \mid X(t)\] = \mu(t) \exp(\beta'
+X(t))\$\$
 
-Estimation treats the baseline cumulative rate \\\Lambda\\
+The rate model treats the baseline cumulative rate \\\Lambda\\
 nonparametrically and maximises the likelihood that a nonhomogeneous
 Poisson process would imply, using an EM algorithm that augments the
 observed counts with latent per-examination-time Poisson counts. The
 Poisson assumption is a working device only: the estimator stays
 consistent and asymptotically normal when it fails, and the default
-covariance estimator is robust to that failure.
+covariance estimator is robust to that failure. The means model is
+fitted by an estimating equation and is provided as the comparator.
 
 ## References
 

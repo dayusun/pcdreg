@@ -14,19 +14,16 @@ vcov(object, type = c("robust", "information", "profile"), ...)
 - object:
 
   A fitted
-  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-  or
-  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
-  model.
+  [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) model.
 
 - type:
 
   Which estimator to return. `"robust"` is the sandwich estimator that
   does not rely on the Poisson assumption and is available for both
   models. `"information"` and `"profile"` apply to
-  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-  only: the first is the efficient information estimator, valid under
-  the Poisson assumption, and the second is the profile likelihood
+  [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) only:
+  the first is the efficient information estimator, valid under the
+  Poisson assumption, and the second is the profile likelihood
   estimator, available only if the model was fitted with
   `profile = TRUE`.
 
@@ -43,7 +40,7 @@ A covariance matrix.
 ``` r
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 sqrt(diag(vcov(fit)))
 #>        x1        x2 
 #> 0.1662945 0.1655435 

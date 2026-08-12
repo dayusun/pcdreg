@@ -5,10 +5,8 @@
 The two models. They take the same data and the same formula, so a model
 can be refitted under the other by changing the function name alone.
 
-- [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-  : Fit the proportional rate model to panel count data
-- [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
-  : Fit the proportional means model to panel count data
+- [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) :
+  Semiparametric regression for panel count data
 
 ## Specifying the data
 
@@ -19,6 +17,8 @@ the data preparation article for the layouts it accepts.
   panel count observations
 - [`is.pcd()`](https://www.sundayu.me/pcdreg/reference/is.pcd.md) : Test
   for a panel count response
+- [`plot(`*`<pcd>`*`)`](https://www.sundayu.me/pcdreg/reference/plot.pcd.md)
+  : Plot panel count data
 
 ## Inspecting a fit
 
@@ -31,18 +31,15 @@ the same way for either.
   : Summarise a fitted panel count model
 - [`baseline()`](https://www.sundayu.me/pcdreg/reference/baseline.md) :
   Estimated baseline function
-- [`predict(`*`<panelrate>`*`)`](https://www.sundayu.me/pcdreg/reference/predict.panelrate.md)
-  [`predict(`*`<panelmean>`*`)`](https://www.sundayu.me/pcdreg/reference/predict.panelrate.md)
+- [`predict(`*`<pcdfit>`*`)`](https://www.sundayu.me/pcdreg/reference/predict.pcdfit.md)
   : Predictions from a panel count model
 - [`plot(`*`<pcdfit>`*`)`](https://www.sundayu.me/pcdreg/reference/plot.pcdfit.md)
   : Plot the estimated baseline function
 
 ## Tuning
 
-- [`panelrate_control()`](https://www.sundayu.me/pcdreg/reference/panelrate_control.md)
-  : Tuning parameters for the EM algorithm
-- [`panelmean_control()`](https://www.sundayu.me/pcdreg/reference/panelmean_control.md)
-  : Tuning parameters for the means model
+- [`pcdreg_control()`](https://www.sundayu.me/pcdreg/reference/pcdreg_control.md)
+  : Tuning parameters for the fitting algorithms
 
 ## Simulation
 
@@ -54,6 +51,5 @@ examples and for checking the covariance estimators against known truth.
 
 ## Package
 
-- [`pcdreg`](https://www.sundayu.me/pcdreg/reference/pcdreg-package.md)
-  [`pcdreg-package`](https://www.sundayu.me/pcdreg/reference/pcdreg-package.md)
+- [`pcdreg-package`](https://www.sundayu.me/pcdreg/reference/pcdreg-package.md)
   : pcdreg: Semiparametric Regression for Panel Count Data

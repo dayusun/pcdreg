@@ -1,8 +1,8 @@
 # Describe panel count observations
 
 Creates the response object used on the left hand side of a
-[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-formula, in the same spirit as
+[`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) formula,
+in the same spirit as
 [`survival::Surv()`](https://rdrr.io/pkg/survival/man/Surv.html).
 
 ## Usage
@@ -107,9 +107,7 @@ reason for seeing it.
 
 ## See also
 
-[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md),
-[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md),
-and
+[`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) and
 [`vignette("data-preparation")`](https://www.sundayu.me/pcdreg/articles/data-preparation.md)
 for converting data into this shape.
 
@@ -137,7 +135,7 @@ pcd(
 # meet it.
 set.seed(1)
 d <- r_panel_count(40)
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 c(subjects = fit$n, examinations = fit$nexam, events = fit$nevent)
 #>     subjects examinations       events 
 #>           40          159          272 

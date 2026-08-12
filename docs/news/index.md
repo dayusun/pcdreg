@@ -4,18 +4,17 @@
 
 - First release.
 
-- [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-  fits the semiparametric proportional rate model for panel count data
-  with time-varying covariates, using the EM algorithm of Sun et
-  al. (2024).
+- [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) fits
+  the semiparametric proportional rate model for panel count data with
+  time-varying covariates, using the EM algorithm of Sun et al. (2024).
 
-- [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
-  fits the proportional means model by the estimating equation of Hu,
-  Sun and Wei (2003). It is the comparator used in the application of
-  Sun et al. (2024), and is included so that the two model families can
-  be compared on the same data. Note that the two are not
-  reparametrisations of each other when covariates vary over time, and
-  that the fitted mean function is not constrained to increase.
+- `pcdreg(model = "mean")` fits the proportional means model by the
+  estimating equation of Hu, Sun and Wei (2003). It is the comparator
+  used in the application of Sun et al. (2024), and is included so that
+  the two model families can be compared on the same data. Note that the
+  two are not reparametrisations of each other when covariates vary over
+  time, and that the fitted mean function is not constrained to
+  increase.
 
 - Covariance estimation for the rate model follows the paper directly.
   [`vcov()`](https://rdrr.io/r/stats/vcov.html) supports
@@ -23,8 +22,8 @@
   Poisson assumption), `type = "information"` (the efficient information
   estimator), and `type = "profile"` (the Murphy–van der Vaart profile
   likelihood estimator, computed only when requested via
-  `panelrate(profile = TRUE)`). The means model has no likelihood, so
-  only the sandwich estimator is available for it.
+  `pcdreg(profile = TRUE)`). The means model has no likelihood, so only
+  the sandwich estimator is available for it.
 
 - Model specification uses
   [`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md) on the left

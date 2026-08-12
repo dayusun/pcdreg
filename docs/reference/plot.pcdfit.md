@@ -14,10 +14,7 @@ plot(x, xlab = "Time", ylab = NULL, type = "s", ...)
 - x:
 
   A fitted
-  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-  or
-  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
-  model.
+  [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) model.
 
 - xlab, ylab, type:
 
@@ -39,5 +36,5 @@ plot(x, xlab = "Time", ylab = NULL, type = "s", ...)
 ``` r
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-plot(panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, d))
+plot(pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, d))
 ```

@@ -20,6 +20,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/data-preparation.html">Preparing data and specifying the model</a></li>
+    <li><a class="dropdown-item" href="../articles/comparison.html">Where pcdreg fits among R packages for panel count data</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -53,7 +54,7 @@
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A fitted <code><a href="panelrate.html">panelrate()</a></code> or <code><a href="panelmean.html">panelmean()</a></code> model.</p></dd>
+<dd><p>A fitted <code><a href="pcdreg.html">pcdreg()</a></code> model.</p></dd>
 
 
 <dt id="arg-xlab-ylab-type">xlab, ylab, type<a class="anchor" aria-label="anchor" href="#arg-xlab-ylab-type"></a></dt>
@@ -74,7 +75,7 @@ step function and to whichever baseline the model estimates.</p></dd>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="r_panel_count.html">r_panel_count</a></span><span class="op">(</span><span class="fl">80</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, lambda <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="fl">8</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">t</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="panelrate.html">panelrate</a></span><span class="op">(</span><span class="fu"><a href="pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, <span class="va">d</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, <span class="va">d</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot.pcdfit-1.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>

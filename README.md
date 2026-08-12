@@ -9,12 +9,12 @@ for these data, allowing the covariates to vary over time.
 
 | | Model | Fitted by |
 |---|---|---|
-| `panelrate()` | $E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t)$ | nonparametric maximum likelihood, via EM |
-| `panelmean()` | $E[N(t) \mid X(t)] = \mu(t)\exp(\beta' X(t))$ | estimating equations |
+| `pcdreg()` | $E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t)$ | nonparametric maximum likelihood, via EM |
+| `pcdreg(model = "mean")` | $E[N(t) \mid X(t)] = \mu(t)\exp(\beta' X(t))$ | estimating equations |
 
-`panelrate()` implements the estimation and covariance methods of Sun, Guo, Li,
+`pcdreg()` implements the estimation and covariance methods of Sun, Guo, Li,
 Tu and Sun (2024), [*Bernoulli* **30**(4),
-3251--3275](https://doi.org/10.3150/23-BEJ1713); `panelmean()` implements Hu,
+3251--3275](https://doi.org/10.3150/23-BEJ1713); `pcdreg(model = "mean")` implements Hu,
 Sun and Wei (2003), [*Scandinavian Journal of Statistics* **30**(1),
 25--43](https://doi.org/10.1111/1467-9469.00316), the comparator used in that
 paper's application.
@@ -61,12 +61,11 @@ head(d)
 #> 5  2 0.000000 0.210000     2 0.7829328 0.5297196
 #> 6  2 0.210000 0.800000     2 0.7829328 0.5297196
 
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
 #> 
 #> Call:
-#> panelrate(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, 
-#>     data = d)
+#> pcdreg(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #> 
 #> Proportional rate model for panel count data 
 #> Standard errors: robust sandwich
@@ -83,7 +82,7 @@ If covariates are time-invariant, one row per examination is enough and the
 three argument form fills in the interval starts:
 
 ```r
-panelrate(pcd(id, time, count) ~ x1 + x2, data = visits)
+pcdreg(pcd(id, time, count) ~ x1 + x2, data = visits)
 ```
 
 ## Choosing a covariance estimator
@@ -106,7 +105,7 @@ algorithm has already produced.
 ``` r
 set.seed(2)
 od <- r_panel_count(150, frailty = 1)   # gamma frailty: not a Poisson process
-odfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
+odfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
 rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
       information = sqrt(diag(vcov(odfit, "information"))))
 #>                    x1         x2
@@ -145,12 +144,12 @@ head(predict(fit, d, type = "mean"))
 
 ## The means model
 
-`panelmean()` takes the same formula and returns an object supporting the same
+`pcdreg(model = "mean")` takes the same formula and returns an object supporting the same
 methods. It needs only the examination times, so it is much cheaper to fit.
 
 
 ``` r
-mfit <- panelmean(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+mfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d, model = "mean")
 cbind(rate = coef(fit), mean = coef(mfit))
 #>         rate       mean
 #> x1  1.181028  0.6398457

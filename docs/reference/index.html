@@ -20,6 +20,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/data-preparation.html">Preparing data and specifying the model</a></li>
+    <li><a class="dropdown-item" href="../articles/comparison.html">Where pcdreg fits among R packages for panel count data</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -48,17 +49,10 @@
 
       <dl><dt>
 
-          <code><a href="panelrate.html">panelrate()</a></code>
+          <code><a href="pcdreg.html">pcdreg()</a></code>
 
         </dt>
-        <dd>Fit the proportional rate model to panel count data</dd>
-
-        <dt>
-
-          <code><a href="panelmean.html">panelmean()</a></code>
-
-        </dt>
-        <dd>Fit the proportional means model to panel count data</dd>
+        <dd>Semiparametric regression for panel count data</dd>
       </dl></div><div class="section level2">
       <h2 id="specifying-the-data">Specifying the data<a class="anchor" aria-label="anchor" href="#specifying-the-data"></a></h2>
 
@@ -82,6 +76,13 @@
 
         </dt>
         <dd>Test for a panel count response</dd>
+
+        <dt>
+
+          <code><a href="plot.pcd.html">plot(<i>&lt;pcd&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot panel count data</dd>
       </dl></div><div class="section level2">
       <h2 id="inspecting-a-fit">Inspecting a fit<a class="anchor" aria-label="anchor" href="#inspecting-a-fit"></a></h2>
 
@@ -115,7 +116,7 @@
 
         <dt>
 
-          <code><a href="predict.panelrate.html">predict(<i>&lt;panelrate&gt;</i>)</a></code> <code><a href="predict.panelrate.html">predict(<i>&lt;panelmean&gt;</i>)</a></code>
+          <code><a href="predict.pcdfit.html">predict(<i>&lt;pcdfit&gt;</i>)</a></code>
 
         </dt>
         <dd>Predictions from a panel count model</dd>
@@ -138,17 +139,10 @@
 
       <dl><dt>
 
-          <code><a href="panelrate_control.html">panelrate_control()</a></code>
+          <code><a href="pcdreg_control.html">pcdreg_control()</a></code>
 
         </dt>
-        <dd>Tuning parameters for the EM algorithm</dd>
-
-        <dt>
-
-          <code><a href="panelmean_control.html">panelmean_control()</a></code>
-
-        </dt>
-        <dd>Tuning parameters for the means model</dd>
+        <dd>Tuning parameters for the fitting algorithms</dd>
       </dl></div><div class="section level2">
       <h2 id="simulation">Simulation<a class="anchor" aria-label="anchor" href="#simulation"></a></h2>
 
@@ -177,7 +171,7 @@
 
       <dl><dt>
 
-          <code><a href="pcdreg-package.html">pcdreg</a></code> <code><a href="pcdreg-package.html">pcdreg-package</a></code>
+          <code><a href="pcdreg-package.html">pcdreg-package</a></code>
 
         </dt>
         <dd>pcdreg: Semiparametric Regression for Panel Count Data</dd>

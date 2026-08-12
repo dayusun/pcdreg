@@ -56,7 +56,7 @@ show. Subject 1 contributes $(0,0.5\rbrack$, $(0.5,1.1\rbrack$ and
 $(1.1,1.9\rbrack$ with 2, 0 and 3 events. Fitting is then
 
 ``` r
-panelrate(pcd(id, time, count) ~ age + arm, data = visits)
+pcdreg(pcd(id, time, count) ~ age + arm, data = visits)
 ```
 
 though not on five rows and two subjects: `age` and `arm` are perfectly
@@ -124,7 +124,7 @@ set.seed(1)
 d <- r_panel_count(60)
 d$site <- factor(c("north", "south", "east")[1 + d$id %% 3])
 
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + site, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + site, data = d)
 names(coef(fit))
 #> [1] "x1"        "sitenorth" "sitesouth"
 ```
@@ -133,7 +133,7 @@ The dot expands to every column that is not part of the response, so
 `id`, `tstart`, `tstop` and `count` are excluded automatically:
 
 ``` r
-names(coef(panelrate(pcd(id, tstart, tstop, count) ~ ., data = d)))
+names(coef(pcdreg(pcd(id, tstart, tstop, count) ~ ., data = d)))
 #> [1] "x1"        "x2"        "sitenorth" "sitesouth"
 ```
 
@@ -203,7 +203,7 @@ one line:
 ``` r
 new <- old
 new$count[old$event == 0] <- NA
-panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
+pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = new)
 ```
 
 ### Examinations and covariate histories in separate tables
@@ -254,7 +254,7 @@ interval of every subject must begin there.
 
 ``` r
 bad <- data.frame(id = 1, tstart = 0.2, tstop = 1, count = 3, x = 1)
-panelrate(pcd(id, tstart, tstop, count) ~ x, data = bad)
+pcdreg(pcd(id, tstart, tstop, count) ~ x, data = bad)
 #> Error: Follow-up must start at time 0, but subject 1 starts at 0.2. Shift the time scale so that 0 is the start of follow-up.
 ```
 
@@ -267,7 +267,7 @@ exactly where the previous one ended: no gaps, no overlaps.
 ``` r
 bad <- data.frame(id = c(1, 1), tstart = c(0, 0.7), tstop = c(0.5, 1),
                   count = c(2, 1), x = c(1, 1))
-panelrate(pcd(id, tstart, tstop, count) ~ x, data = bad)
+pcdreg(pcd(id, tstart, tstop, count) ~ x, data = bad)
 #> Error: Intervals within a subject must be contiguous, but subject 1 has a gap or overlap at time 0.7.
 ```
 
@@ -303,7 +303,7 @@ last1 <- max(d$tstop[d$id == 1])
 trailing <- transform(d[d$id == 1, ][1, ],
                       tstart = last1, tstop = last1 + 0.5, count = NA)
 
-fit2 <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2,
+fit2 <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2,
                   data = rbind(d, trailing))
 #> Dropping 1 row(s) beyond the last examination of their subject.
 ```
@@ -332,7 +332,7 @@ contiguous. For the **means model** only the subject’s own examination
 times are used, so it is much cheaper.
 
 ``` r
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 c(subjects = fit$n, examinations = fit$nexam,
   grid_times = fit$ngrid, events = fit$nevent)
 #>     subjects examinations   grid_times       events 

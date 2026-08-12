@@ -14,10 +14,7 @@ summary(object, type = c("robust", "information", "profile"), ...)
 - object:
 
   A fitted
-  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-  or
-  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
-  model.
+  [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) model.
 
 - type:
 
@@ -39,12 +36,11 @@ statistics and two sided p-values.
 ``` r
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
 #> 
 #> Call:
-#> panelrate(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, 
-#>     data = d)
+#> pcdreg(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #> 
 #> Proportional rate model for panel count data 
 #> Standard errors: robust sandwich
@@ -58,8 +54,7 @@ summary(fit)
 summary(fit, "information")
 #> 
 #> Call:
-#> panelrate(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, 
-#>     data = d)
+#> pcdreg(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #> 
 #> Proportional rate model for panel count data 
 #> Standard errors: efficient information

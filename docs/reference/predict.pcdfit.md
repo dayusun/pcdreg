@@ -5,10 +5,7 @@ Predictions from a panel count model
 ## Usage
 
 ``` r
-# S3 method for class 'panelrate'
-predict(object, newdata, type = c("lp", "mean"), ...)
-
-# S3 method for class 'panelmean'
+# S3 method for class 'pcdfit'
 predict(object, newdata, type = c("lp", "mean"), ...)
 ```
 
@@ -17,10 +14,7 @@ predict(object, newdata, type = c("lp", "mean"), ...)
 - object:
 
   A fitted
-  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
-  or
-  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
-  model.
+  [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) model.
 
 - newdata:
 
@@ -36,9 +30,9 @@ predict(object, newdata, type = c("lp", "mean"), ...)
   `"mean"` returns the predicted mean number of events at every fitted
   examination time within each subject's follow-up: \\\int_0^t
   \exp(\beta' X(s)) \\ d\hat\Lambda(s)\\ for
-  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md),
-  and \\\hat\mu(t) \exp(\beta' X(t))\\ for
-  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md).
+  [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md), and
+  \\\hat\mu(t) \exp(\beta' X(t))\\ for
+  [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md).
 
 - ...:
 
@@ -64,7 +58,7 @@ time-varying covariates.
 ``` r
 set.seed(1)
 d <- r_panel_count(60, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 head(predict(fit))
 #>         1         2         3         4         5         6 
 #> 0.4582126 0.4582126 0.4582126 0.5172010 0.4472924 0.4472924 

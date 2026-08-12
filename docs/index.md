@@ -6,16 +6,15 @@ happened between visits but not when. `pcdreg` fits the two
 semiparametric models used for these data, allowing the covariates to
 vary over time.
 
-|                                                                       | Model                                                                                             | Fitted by                                |
-|-----------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------|
-| [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md) | $E\left\lbrack dN(t) \mid X(t) \right\rbrack = \exp\left( \beta\prime X(t) \right)\, d\Lambda(t)$ | nonparametric maximum likelihood, via EM |
-| [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md) | $E\left\lbrack N(t) \mid X(t) \right\rbrack = \mu(t)\exp\left( \beta\prime X(t) \right)$          | estimating equations                     |
+|                                                                 | Model                                                                                             | Fitted by                                |
+|-----------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------|
+| [`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md) | $E\left\lbrack dN(t) \mid X(t) \right\rbrack = \exp\left( \beta\prime X(t) \right)\, d\Lambda(t)$ | nonparametric maximum likelihood, via EM |
+| `pcdreg(model = "mean")`                                        | $E\left\lbrack N(t) \mid X(t) \right\rbrack = \mu(t)\exp\left( \beta\prime X(t) \right)$          | estimating equations                     |
 
-[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
+[`pcdreg()`](https://www.sundayu.me/pcdreg/reference/pcdreg.md)
 implements the estimation and covariance methods of Sun, Guo, Li, Tu and
 Sun (2024), [*Bernoulli* **30**(4),
-3251–3275](https://doi.org/10.3150/23-BEJ1713);
-[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
+3251–3275](https://doi.org/10.3150/23-BEJ1713); `pcdreg(model = "mean")`
 implements Hu, Sun and Wei (2003), [*Scandinavian Journal of Statistics*
 **30**(1), 25–43](https://doi.org/10.1111/1467-9469.00316), the
 comparator used in that paper’s application.
@@ -63,12 +62,11 @@ head(d)
 #> 5  2 0.000000 0.210000     2 0.7829328 0.5297196
 #> 6  2 0.210000 0.800000     2 0.7829328 0.5297196
 
-fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
 #> 
 #> Call:
-#> panelrate(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, 
-#>     data = d)
+#> pcdreg(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 #> 
 #> Proportional rate model for panel count data 
 #> Standard errors: robust sandwich
@@ -85,7 +83,7 @@ If covariates are time-invariant, one row per examination is enough and
 the three argument form fills in the interval starts:
 
 ``` r
-panelrate(pcd(id, time, count) ~ x1 + x2, data = visits)
+pcdreg(pcd(id, time, count) ~ x1 + x2, data = visits)
 ```
 
 ## Choosing a covariance estimator
@@ -108,7 +106,7 @@ quantities the EM algorithm has already produced.
 ``` r
 set.seed(2)
 od <- r_panel_count(150, frailty = 1)   # gamma frailty: not a Poisson process
-odfit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
+odfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = od)
 rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
       information = sqrt(diag(vcov(odfit, "information"))))
 #>                    x1         x2
@@ -148,13 +146,12 @@ head(predict(fit, d, type = "mean"))
 
 ## The means model
 
-[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
-takes the same formula and returns an object supporting the same
-methods. It needs only the examination times, so it is much cheaper to
-fit.
+`pcdreg(model = "mean")` takes the same formula and returns an object
+supporting the same methods. It needs only the examination times, so it
+is much cheaper to fit.
 
 ``` r
-mfit <- panelmean(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
+mfit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d, model = "mean")
 cbind(rate = coef(fit), mean = coef(mfit))
 #>         rate       mean
 #> x1  1.181028  0.6398457

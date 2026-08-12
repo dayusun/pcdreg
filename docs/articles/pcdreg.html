@@ -35,6 +35,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/data-preparation.html">Preparing data and specifying the model</a></li>
+    <li><a class="dropdown-item" href="../articles/comparison.html">Where pcdreg fits among R packages for panel count data</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -89,7 +90,7 @@ and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><msub><mi>N</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\Delta N_{ij}</annotation></semantics></math>
 for the count in
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>T</mi><mrow><mi>i</mi><mo>,</mo><mi>j</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>T</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">(T_{i,j-1}, T_{ij}]</annotation></semantics></math>.
-<code><a href="../reference/panelrate.html">panelrate()</a></code> fits the proportional rate model</p>
+<code><a href="../reference/pcdreg.html">pcdreg()</a></code> fits the proportional rate model</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mrow><mo stretchy="true" form="prefix">[</mo><mi>d</mi><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">]</mo></mrow><mo>=</mo><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mi>′</mi><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="0.167em"></mspace><mi>d</mi><mi>Λ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t),</annotation></semantics></math></p>
 <p>where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Λ</mi><annotation encoding="application/x-tex">\Lambda</annotation></semantics></math>
@@ -111,8 +112,8 @@ to be positive, so predicted means increase automatically, and
 carries the same instantaneous relative-risk reading that a hazard ratio
 has in survival analysis.</p>
 <p>The means model is nonetheless the established alternative, and the
-package fits it too, with <code><a href="../reference/panelmean.html">panelmean()</a></code>. The last section
-compares the two.</p>
+package fits it too, with <code>pcdreg(model = "mean")</code>. The last
+section compares the two.</p>
 </div>
 <div class="section level2">
 <h2 id="getting-data-into-shape">Getting data into shape<a class="anchor" aria-label="anchor" href="#getting-data-into-shape"></a>
@@ -156,8 +157,8 @@ interval and none in the second; the dose changed at 0.9, part way
 through the second interval, which is exactly the information the rate
 model can use and the means model cannot.</p>
 <p>Within a subject the intervals must be contiguous, start at zero, and
-end at an examination. <code><a href="../reference/panelrate.html">panelrate()</a></code> checks all of this and
-says which subject is at fault when it fails.</p>
+end at an examination. <code><a href="../reference/pcdreg.html">pcdreg()</a></code> checks all of this and says
+which subject is at fault when it fails.</p>
 <div class="section level3">
 <h3 id="converting-data-held-in-the-older-layout">Converting data held in the older layout<a class="anchor" aria-label="anchor" href="#converting-data-held-in-the-older-layout"></a>
 </h3>
@@ -169,7 +170,7 @@ the examination row does not:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">new</span> <span class="op">&lt;-</span> <span class="va">old</span></span>
 <span><span class="va">new</span><span class="op">$</span><span class="va">count</span><span class="op">[</span><span class="va">old</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">0</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
-<span><span class="fu"><a href="../reference/panelrate.html">panelrate</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">new</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">new</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -178,12 +179,11 @@ the examination row does not:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/r_panel_count.html">r_panel_count</a></span><span class="op">(</span><span class="fl">200</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, lambda <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="fl">8</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">t</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/panelrate.html">panelrate</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; panelrate(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, </span></span>
-<span><span class="co">#&gt;     data = d)</span></span>
+<span><span class="co">#&gt; pcdreg(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Proportional rate model for panel count data </span></span>
 <span><span class="co">#&gt; Standard errors: robust sandwich</span></span>
@@ -198,7 +198,7 @@ the examination row does not:</p>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>
 would be indistinguishable from a rescaling of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Λ</mi><annotation encoding="application/x-tex">\Lambda</annotation></semantics></math>,
-so <code><a href="../reference/panelrate.html">panelrate()</a></code> drops it and reports the baseline
+so <code><a href="../reference/pcdreg.html">pcdreg()</a></code> drops it and reports the baseline
 separately.</p>
 <p>Fitting maximises the likelihood implied by a nonhomogeneous Poisson
 process, using an EM algorithm that treats the unobserved per-time
@@ -248,7 +248,7 @@ of Murphy and van der Vaart. It is included for comparison with the
 literature, and because it is expensive it is computed only on
 request:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/panelrate.html">panelrate</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span>,</span>
+<code class="sourceCode R"><span><span class="va">pfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span>,</span>
 <span>                  profile <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>information <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov</a></span><span class="op">(</span><span class="va">pfit</span>, <span class="st">"information"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>      profile     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov</a></span><span class="op">(</span><span class="va">pfit</span>, <span class="st">"profile"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -276,7 +276,7 @@ Poisson structure.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">od</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/r_panel_count.html">r_panel_count</a></span><span class="op">(</span><span class="fl">200</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, frailty <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">odfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/panelrate.html">panelrate</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">od</span><span class="op">)</span></span>
+<span><span class="va">odfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">od</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>robust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov</a></span><span class="op">(</span><span class="va">odfit</span>, <span class="st">"robust"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>      information <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov</a></span><span class="op">(</span><span class="va">odfit</span>, <span class="st">"information"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                     x1         x2</span></span>
@@ -332,20 +332,20 @@ the rate model.</p>
 <div class="section level2">
 <h2 id="the-means-model">The means model<a class="anchor" aria-label="anchor" href="#the-means-model"></a>
 </h2>
-<p><code><a href="../reference/panelmean.html">panelmean()</a></code> fits the other classical model for these
-data,</p>
+<p><code>pcdreg(model = "mean")</code> fits the other classical model
+for these data,</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mrow><mo stretchy="true" form="prefix">[</mo><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">]</mo></mrow><mo>=</mo><mi>μ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mi>′</mi><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">E[N(t) \mid X(t)] = \mu(t)\exp(\beta'X(t)),</annotation></semantics></math></p>
 <p>by the estimating equation of Hu, Sun and Wei (2003). It is the
 comparator used in the application of the paper, and it is cheap: only
 the examination times enter, so none of the grid expansion the rate
 model needs is required.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/panelmean.html">panelmean</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">mfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pcdreg.html">pcdreg</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcd.html">pcd</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">count</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">d</span>, model <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mfit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; panelmean(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, </span></span>
-<span><span class="co">#&gt;     data = d)</span></span>
+<span><span class="co">#&gt; pcdreg(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, data = d, </span></span>
+<span><span class="co">#&gt;     model = "mean")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Proportional means model for panel count data </span></span>
 <span><span class="co">#&gt; Standard errors: robust sandwich</span></span>
@@ -372,8 +372,8 @@ other:
 acts on the instantaneous rate in one and on the cumulative mean in the
 other, so they answer different questions and there is no reason for
 them to agree. The data here were generated from the rate model, which
-is why <code><a href="../reference/panelrate.html">panelrate()</a></code> recovers the values used to simulate
-them and <code><a href="../reference/panelmean.html">panelmean()</a></code> does not.</p>
+is why <code><a href="../reference/pcdreg.html">pcdreg()</a></code> recovers the values used to simulate them
+and <code>pcdreg(model = "mean")</code> does not.</p>
 <p>Second, nothing constrains the fitted
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>μ</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat\mu</annotation></semantics></math>
 to increase:</p>
@@ -387,15 +387,15 @@ is meant to avoid, and it is visible here on ordinary simulated data
 rather than only in principle. A mean function that falls is not a
 numerical failure; it is what the estimator returns when covariate
 values move up and down, and it is why predicted means from
-<code><a href="../reference/panelmean.html">panelmean()</a></code> can decrease while those from
-<code><a href="../reference/panelrate.html">panelrate()</a></code> cannot.</p>
+<code>pcdreg(model = "mean")</code> can decrease while those from
+<code><a href="../reference/pcdreg.html">pcdreg()</a></code> cannot.</p>
 </div>
 <div class="section level2">
 <h2 id="computation">Computation<a class="anchor" aria-label="anchor" href="#computation"></a>
 </h2>
 <p>The EM algorithm converges linearly and, on this problem, slowly:
 plain EM can still be moving in the fifth decimal place after tens of
-thousands of passes. <code><a href="../reference/panelrate.html">panelrate()</a></code> therefore extrapolates the
+thousands of passes. <code><a href="../reference/pcdreg.html">pcdreg()</a></code> therefore extrapolates the
 iterations using the SQUAREM scheme of Varadhan and Roland, keeping an
 extrapolated point only when a stabilising EM pass from it does at least
 as well on the observed data log likelihood. The fixed point is
@@ -406,8 +406,8 @@ by an order of magnitude.</p>
 <span>  converged <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">converged</span><span class="op">)</span></span>
 <span><span class="co">#&gt; iterations  EM_passes  converged </span></span>
 <span><span class="co">#&gt;        522       1567          1</span></span></code></pre></div>
-<p>Set <code>accelerate = FALSE</code> in
-<code><a href="../reference/panelrate_control.html">panelrate_control()</a></code> to recover plain EM.</p>
+<p>Set <code>accelerate = FALSE</code> in <code><a href="../reference/pcdreg_control.html">pcdreg_control()</a></code>
+to recover plain EM.</p>
 <p>The dominant cost is the size of the pooled grid of distinct
 examination times, because the covariate trajectory of every subject has
 to be evaluated at every grid time within their follow-up. Examination
