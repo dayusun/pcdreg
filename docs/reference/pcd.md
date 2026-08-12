@@ -1,7 +1,7 @@
 # Describe panel count observations
 
 Creates the response object used on the left hand side of a
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
 formula, in the same spirit as
 [`survival::Surv()`](https://rdrr.io/pkg/survival/man/Surv.html).
 
@@ -78,7 +78,7 @@ not something the package can detect for you, and getting it wrong
 inflates the event count and biases the coefficients rather than raising
 an error. A quick check after fitting is that `fit$nevent` matches the
 number of events you believe you have. See
-[`vignette("data-preparation")`](https://dayusun.github.io/pcdreg/articles/data-preparation.md)
+[`vignette("data-preparation")`](https://www.sundayu.me/pcdreg/articles/data-preparation.md)
 for the conversion.
 
 ## What the data must satisfy
@@ -107,10 +107,10 @@ reason for seeing it.
 
 ## See also
 
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md),
-[`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md),
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md),
+[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md),
 and
-[`vignette("data-preparation")`](https://dayusun.github.io/pcdreg/articles/data-preparation.md)
+[`vignette("data-preparation")`](https://www.sundayu.me/pcdreg/articles/data-preparation.md)
 for converting data into this shape.
 
 ## Examples

@@ -3,7 +3,7 @@
 Fits \$\$E\[N(t) \mid X(t)\] = \mu(t) \exp(\beta' X(t))\$\$ by the
 estimating equation of Hu, Sun and Wei (2003). This is the comparator
 the paper behind
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
 uses, and it is provided so the two model families can be compared on
 the same data.
 
@@ -25,7 +25,7 @@ panelmean(
 - formula:
 
   A formula whose left hand side is a
-  [`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md) object.
+  [`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md) object.
 
 - data:
 
@@ -38,7 +38,7 @@ panelmean(
 - control:
 
   A list from
-  [`panelmean_control()`](https://dayusun.github.io/pcdreg/reference/panelmean_control.md).
+  [`panelmean_control()`](https://www.sundayu.me/pcdreg/reference/panelmean_control.md).
 
 - init:
 
@@ -58,14 +58,14 @@ covariates over the subjects examined at \\t\\, weighted by
 \\\exp(\beta' X)\\, and \\N_i(T\_{ij})\\ is the cumulative count. Only
 the examination times enter, so no covariate values between them are
 needed and the fit is much cheaper than
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md).
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md).
 
 There is no likelihood here, so no log likelihood is reported and the
 only covariance available is the sandwich \\\Omega^{-1} S \Omega^{-1} /
 n\\.
 
 Two cautions when comparing with
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md).
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md).
 The models are not reparametrisations of each other when covariates vary
 over time, so their coefficients answer different questions: \\\beta\\
 here acts on the cumulative mean, and in the rate model on the
@@ -76,13 +76,13 @@ difficulty with the means model that motivates the rate model.
 ## Specifying the model
 
 Identical to
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md):
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md):
 the left hand side is a
-[`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md) object and
-the right hand side an ordinary model formula, with no intercept. The
-two fitters accept exactly the same data, so a model can be refitted
-under the other by changing the function name alone. See
-[`vignette("data-preparation")`](https://dayusun.github.io/pcdreg/articles/data-preparation.md)
+[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md) object and the
+right hand side an ordinary model formula, with no intercept. The two
+fitters accept exactly the same data, so a model can be refitted under
+the other by changing the function name alone. See
+[`vignette("data-preparation")`](https://www.sundayu.me/pcdreg/articles/data-preparation.md)
 for the data layouts.
 
 ## References
@@ -98,8 +98,8 @@ for regression analysis of panel count data. *Bernoulli* **30**(4),
 
 ## See also
 
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md),
-[`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md),
+[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md)
 
 ## Examples
 

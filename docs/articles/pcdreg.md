@@ -16,7 +16,7 @@ this shape.
 Write $N_{i}(t)$ for the number of events subject $i$ has experienced by
 time $t$, observed at times $T_{i1} < \ldots < T_{iJ_{i}}$, and
 $\Delta N_{ij}$ for the count in $(T_{i,j - 1},T_{ij}\rbrack$.
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
 fits the proportional rate model
 
 $$E\left\lbrack dN(t) \mid X(t) \right\rbrack = \exp\left( \beta\prime X(t) \right)\, d\Lambda(t),$$
@@ -38,14 +38,14 @@ relative-risk reading that a hazard ratio has in survival analysis.
 
 The means model is nonetheless the established alternative, and the
 package fits it too, with
-[`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md).
+[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md).
 The last section compares the two.
 
 ## Getting data into shape
 
 The response is built by
-[`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md), which
-plays the role `Surv()` plays in survival analysis and, like it, has two
+[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md), which plays
+the role `Surv()` plays in survival analysis and, like it, has two
 forms.
 
 When covariates do not change over time, one row per examination is
@@ -91,7 +91,7 @@ model can use and the means model cannot.
 
 Within a subject the intervals must be contiguous, start at zero, and
 end at an examination.
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
 checks all of this and says which subject is at fault when it fails.
 
 ### Converting data held in the older layout
@@ -133,7 +133,7 @@ summary(fit)
 
 There is no intercept: a constant in $X$ would be indistinguishable from
 a rescaling of $\Lambda$, so
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
 drops it and reports the baseline separately.
 
 Fitting maximises the likelihood implied by a nonhomogeneous Poisson
@@ -230,7 +230,7 @@ and the reason to think hard before reporting anything else.
 
 ## The baseline and predicted means
 
-[`baseline()`](https://dayusun.github.io/pcdreg/reference/baseline.md)
+[`baseline()`](https://www.sundayu.me/pcdreg/reference/baseline.md)
 returns the estimated jumps and the cumulative baseline rate.
 
 ``` r
@@ -279,7 +279,7 @@ through follow-up, which is the structural advantage of the rate model.
 
 ## The means model
 
-[`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
+[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
 fits the other classical model for these data,
 
 $$E\left\lbrack N(t) \mid X(t) \right\rbrack = \mu(t)\exp\left( \beta\prime X(t) \right),$$
@@ -327,9 +327,9 @@ other: $\beta$ acts on the instantaneous rate in one and on the
 cumulative mean in the other, so they answer different questions and
 there is no reason for them to agree. The data here were generated from
 the rate model, which is why
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
 recovers the values used to simulate them and
-[`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
+[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
 does not.
 
 Second, nothing constrains the fitted $\widehat{\mu}$ to increase:
@@ -346,9 +346,9 @@ meant to avoid, and it is visible here on ordinary simulated data rather
 than only in principle. A mean function that falls is not a numerical
 failure; it is what the estimator returns when covariate values move up
 and down, and it is why predicted means from
-[`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
+[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
 can decrease while those from
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
 cannot.
 
 ## Computation
@@ -356,7 +356,7 @@ cannot.
 The EM algorithm converges linearly and, on this problem, slowly: plain
 EM can still be moving in the fifth decimal place after tens of
 thousands of passes.
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
 therefore extrapolates the iterations using the SQUAREM scheme of
 Varadhan and Roland, keeping an extrapolated point only when a
 stabilising EM pass from it does at least as well on the observed data
@@ -371,7 +371,7 @@ c(iterations = fit$iterations, EM_passes = fit$passes,
 ```
 
 Set `accelerate = FALSE` in
-[`panelrate_control()`](https://dayusun.github.io/pcdreg/reference/panelrate_control.md)
+[`panelrate_control()`](https://www.sundayu.me/pcdreg/reference/panelrate_control.md)
 to recover plain EM.
 
 The dominant cost is the size of the pooled grid of distinct examination

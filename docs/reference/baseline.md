@@ -16,9 +16,9 @@ baseline(object, ...)
 - object:
 
   A fitted
-  [`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
   or
-  [`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
+  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
   model.
 
 - ...:
@@ -28,11 +28,11 @@ baseline(object, ...)
 ## Value
 
 A data frame with one row per examination time on the pooled grid. For
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
-it gives the jump sizes and the cumulative baseline rate \\\Lambda(t)\\;
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md) it
+gives the jump sizes and the cumulative baseline rate \\\Lambda(t)\\;
 for
-[`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
-it gives the baseline mean \\\mu(t)\\, which is not constrained to
+[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md) it
+gives the baseline mean \\\mu(t)\\, which is not constrained to
 increase.
 
 ## Examples

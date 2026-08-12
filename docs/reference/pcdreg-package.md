@@ -4,7 +4,7 @@ Panel count data arise when a recurrent event process is observed only
 at intermittent examination times, so that the number of events between
 consecutive examinations is known but the event times themselves are
 not.
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
 fits the semiparametric proportional rate model \$\$E\[dN(t) \mid X(t)\]
 = \exp(\beta' X(t)) \\ d\Lambda(t)\$\$ to such data, allowing the
 covariates \\X(t)\\ to vary over time.
@@ -29,7 +29,7 @@ Useful links:
 
 - <https://github.com/dayusun/pcdreg>
 
-- <https://dayusun.github.io/pcdreg/>
+- <https://www.sundayu.me/pcdreg/>
 
 - Report bugs at <https://github.com/dayusun/pcdreg/issues>
 

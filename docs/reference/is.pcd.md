@@ -17,7 +17,7 @@ is.pcd(x)
 ## Value
 
 `TRUE` if `x` was created by
-[`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md).
+[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md).
 
 ## Examples
 

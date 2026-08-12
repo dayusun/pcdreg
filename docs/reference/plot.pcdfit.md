@@ -14,9 +14,9 @@ plot(x, xlab = "Time", ylab = NULL, type = "s", ...)
 - x:
 
   A fitted
-  [`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
   or
-  [`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
+  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
   model.
 
 - xlab, ylab, type:

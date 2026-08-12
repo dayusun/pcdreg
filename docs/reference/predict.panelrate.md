@@ -17,16 +17,16 @@ predict(object, newdata, type = c("lp", "mean"), ...)
 - object:
 
   A fitted
-  [`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
   or
-  [`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
+  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
   model.
 
 - newdata:
 
   Data to predict for. Defaults to the data the model was fitted to. For
   `type = "mean"` it must also contain the variables in the
-  [`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md) response,
+  [`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md) response,
   since the prediction follows each subject's covariate trajectory; the
   counts themselves are ignored.
 
@@ -36,9 +36,9 @@ predict(object, newdata, type = c("lp", "mean"), ...)
   `"mean"` returns the predicted mean number of events at every fitted
   examination time within each subject's follow-up: \\\int_0^t
   \exp(\beta' X(s)) \\ d\hat\Lambda(s)\\ for
-  [`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md),
+  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md),
   and \\\hat\mu(t) \exp(\beta' X(t))\\ for
-  [`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md).
+  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md).
 
 - ...:
 

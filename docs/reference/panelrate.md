@@ -24,8 +24,8 @@ panelrate(
 - formula:
 
   A formula whose left hand side is a
-  [`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md) object,
-  for example `pcd(id, tstart, tstop, count) ~ x1 + x2`. No intercept is
+  [`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md) object, for
+  example `pcd(id, tstart, tstop, count) ~ x1 + x2`. No intercept is
   fitted: it is absorbed into the baseline \\\Lambda\\.
 
 - data:
@@ -41,7 +41,7 @@ panelrate(
 - control:
 
   A list from
-  [`panelrate_control()`](https://dayusun.github.io/pcdreg/reference/panelrate_control.md).
+  [`panelrate_control()`](https://www.sundayu.me/pcdreg/reference/panelrate_control.md).
 
 - profile:
 
@@ -70,7 +70,7 @@ asymptotically normal when it fails, and the default covariance
 estimator remains valid.
 
 Three covariance estimators are available through
-[`vcov.pcdfit()`](https://dayusun.github.io/pcdreg/reference/vcov.pcdfit.md).
+[`vcov.pcdfit()`](https://www.sundayu.me/pcdreg/reference/vcov.pcdfit.md).
 `"robust"` is the sandwich \\\Omega^{-1} S \Omega^{-1} / n\\, which does
 not rely on the Poisson assumption and is the default. `"information"`
 is \\S^{-1} / n\\, valid only under that assumption but a fast
@@ -90,10 +90,10 @@ stably.
 ## Specifying the model
 
 The left hand side is always a
-[`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md) object,
-which carries the subject, the interval and the event count. The right
-hand side is an ordinary model formula, so interactions,
-transformations, factors and `.` all behave as usual:
+[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md) object, which
+carries the subject, the interval and the event count. The right hand
+side is an ordinary model formula, so interactions, transformations,
+factors and `.` all behave as usual:
 
     pcd(id, tstart, tstop, count) ~ x1 + x2
     pcd(id, tstart, tstop, count) ~ x1 * x2 + log(x3)
@@ -105,13 +105,13 @@ identifier, times and counts are excluded automatically.
 No intercept is fitted. A constant column cannot be distinguished from a
 rescaling of \\\Lambda\\, so it is dropped and the baseline is reported
 separately by
-[`baseline()`](https://dayusun.github.io/pcdreg/reference/baseline.md).
+[`baseline()`](https://www.sundayu.me/pcdreg/reference/baseline.md).
 Adding `- 1` changes nothing. One consequence is that shifting a
 covariate by a constant \\c\\ leaves \\\beta\\ alone and rescales the
 baseline by \\e^{-c\beta}\\: centring covariates moves the baseline, not
 the coefficients.
 
-[`vignette("data-preparation")`](https://dayusun.github.io/pcdreg/articles/data-preparation.md)
+[`vignette("data-preparation")`](https://www.sundayu.me/pcdreg/articles/data-preparation.md)
 covers the data layouts in full, including the conversion from
 cumulative counts, which is the mistake most worth avoiding.
 
@@ -126,10 +126,10 @@ Murphy, S. A. and van der Vaart, A. W. (2000). On profile likelihood.
 
 ## See also
 
-[`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md),
-[`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md),
-[`vcov.pcdfit()`](https://dayusun.github.io/pcdreg/reference/vcov.pcdfit.md),
-[`r_panel_count()`](https://dayusun.github.io/pcdreg/reference/r_panel_count.md)
+[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md),
+[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md),
+[`vcov.pcdfit()`](https://www.sundayu.me/pcdreg/reference/vcov.pcdfit.md),
+[`r_panel_count()`](https://www.sundayu.me/pcdreg/reference/r_panel_count.md)
 
 ## Examples
 

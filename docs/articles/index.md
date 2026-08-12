@@ -3,6 +3,6 @@
 ### Articles
 
 - [Regression analysis of panel count
-  data](https://dayusun.github.io/pcdreg/articles/pcdreg.md):
+  data](https://www.sundayu.me/pcdreg/articles/pcdreg.md):
 - [Preparing data and specifying the
-  model](https://dayusun.github.io/pcdreg/articles/data-preparation.md):
+  model](https://www.sundayu.me/pcdreg/articles/data-preparation.md):

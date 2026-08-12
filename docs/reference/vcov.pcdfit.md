@@ -14,9 +14,9 @@ vcov(object, type = c("robust", "information", "profile"), ...)
 - object:
 
   A fitted
-  [`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
   or
-  [`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
+  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
   model.
 
 - type:
@@ -24,7 +24,7 @@ vcov(object, type = c("robust", "information", "profile"), ...)
   Which estimator to return. `"robust"` is the sandwich estimator that
   does not rely on the Poisson assumption and is available for both
   models. `"information"` and `"profile"` apply to
-  [`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
   only: the first is the efficient information estimator, valid under
   the Poisson assumption, and the second is the profile likelihood
   estimator, available only if the model was fitted with

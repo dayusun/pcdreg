@@ -29,7 +29,7 @@ quietly give you the wrong answer.
 
 ## The response
 
-[`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md) builds the
+[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md) builds the
 left hand side of the formula, in the same way `Surv()` does for
 survival models. It has two forms, and which you need depends on one
 question only: **do any covariates change value during follow-up?**
@@ -142,7 +142,7 @@ names(coef(panelrate(pcd(id, tstart, tstop, count) ~ ., data = d)))
 A constant column cannot be told apart from a rescaling of the baseline
 function, so both fitters drop the intercept and report the baseline
 separately through
-[`baseline()`](https://dayusun.github.io/pcdreg/reference/baseline.md).
+[`baseline()`](https://www.sundayu.me/pcdreg/reference/baseline.md).
 Writing `~ x1 + x2 - 1` changes nothing, and adding `+ 0` is
 unnecessary.
 
@@ -280,7 +280,7 @@ is `NA` on every row contributes nothing and is more likely a data error
 than an intention.
 
 **Counts are non-negative whole numbers.**
-[`pcd()`](https://dayusun.github.io/pcdreg/reference/pcd.md) refuses
+[`pcd()`](https://www.sundayu.me/pcdreg/reference/pcd.md) refuses
 anything else, which catches rates and averages passed by mistake.
 
 ``` r
@@ -362,6 +362,6 @@ c(rows_supplied = nrow(d),
 
 ## See also
 
-[`vignette("pcdreg")`](https://dayusun.github.io/pcdreg/articles/pcdreg.md)
+[`vignette("pcdreg")`](https://www.sundayu.me/pcdreg/articles/pcdreg.md)
 for the models themselves, the choice of covariance estimator, and the
 comparison between the rate and means models.

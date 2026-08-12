@@ -14,15 +14,15 @@ summary(object, type = c("robust", "information", "profile"), ...)
 - object:
 
   A fitted
-  [`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+  [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
   or
-  [`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
+  [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
   model.
 
 - type:
 
   Which covariance estimator to base the standard errors on. See
-  [`vcov.pcdfit()`](https://dayusun.github.io/pcdreg/reference/vcov.pcdfit.md).
+  [`vcov.pcdfit()`](https://www.sundayu.me/pcdreg/reference/vcov.pcdfit.md).
 
 - ...:
 

@@ -6,16 +6,16 @@ happened between visits but not when. `pcdreg` fits the two
 semiparametric models used for these data, allowing the covariates to
 vary over time.
 
-|                                                                          | Model                                                                                             | Fitted by                                |
-|--------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------|
-| [`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md) | $E\left\lbrack dN(t) \mid X(t) \right\rbrack = \exp\left( \beta\prime X(t) \right)\, d\Lambda(t)$ | nonparametric maximum likelihood, via EM |
-| [`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md) | $E\left\lbrack N(t) \mid X(t) \right\rbrack = \mu(t)\exp\left( \beta\prime X(t) \right)$          | estimating equations                     |
+|                                                                       | Model                                                                                             | Fitted by                                |
+|-----------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------|
+| [`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md) | $E\left\lbrack dN(t) \mid X(t) \right\rbrack = \exp\left( \beta\prime X(t) \right)\, d\Lambda(t)$ | nonparametric maximum likelihood, via EM |
+| [`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md) | $E\left\lbrack N(t) \mid X(t) \right\rbrack = \mu(t)\exp\left( \beta\prime X(t) \right)$          | estimating equations                     |
 
-[`panelrate()`](https://dayusun.github.io/pcdreg/reference/panelrate.md)
+[`panelrate()`](https://www.sundayu.me/pcdreg/reference/panelrate.md)
 implements the estimation and covariance methods of Sun, Guo, Li, Tu and
 Sun (2024), [*Bernoulli* **30**(4),
 3251–3275](https://doi.org/10.3150/23-BEJ1713);
-[`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
+[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
 implements Hu, Sun and Wei (2003), [*Scandinavian Journal of Statistics*
 **30**(1), 25–43](https://doi.org/10.1111/1467-9469.00316), the
 comparator used in that paper’s application.
@@ -67,8 +67,8 @@ fit <- panelrate(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d)
 summary(fit)
 #> 
 #> Call:
-#> panelrate(formula = pcd(id, tstart, tstop, count) ~ x1 + 
-#>     x2, data = d)
+#> panelrate(formula = pcd(id, tstart, tstop, count) ~ x1 + x2, 
+#>     data = d)
 #> 
 #> Proportional rate model for panel count data 
 #> Standard errors: robust sandwich
@@ -148,7 +148,7 @@ head(predict(fit, d, type = "mean"))
 
 ## The means model
 
-[`panelmean()`](https://dayusun.github.io/pcdreg/reference/panelmean.md)
+[`panelmean()`](https://www.sundayu.me/pcdreg/reference/panelmean.md)
 takes the same formula and returns an object supporting the same
 methods. It needs only the examination times, so it is much cheaper to
 fit.

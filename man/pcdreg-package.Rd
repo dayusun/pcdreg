@@ -29,7 +29,7 @@ A robust approach for regression analysis of panel count data.
 Useful links:
 \itemize{
   \item \url{https://github.com/dayusun/pcdreg}
-  \item \url{https://dayusun.github.io/pcdreg/}
+  \item \url{https://www.sundayu.me/pcdreg/}
   \item Report bugs at \url{https://github.com/dayusun/pcdreg/issues}
 }
 
