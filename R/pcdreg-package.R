@@ -26,6 +26,7 @@
 #'
 #' @useDynLib pcdreg, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
+#' @importFrom ggplot2 autoplot
 #' @importFrom stats coef confint logLik nobs predict vcov
 #' @importFrom stats delete.response model.frame model.matrix model.response
 #' @importFrom stats na.pass pnorm printCoefmat qnorm terms
@@ -35,3 +36,11 @@
 # methods can be registered against them when the package is loaded without
 # stats attached.  Without it the package fails to load with only its stated
 # dependencies, which no session with stats already attached will reveal.
+
+#' @importFrom ggplot2 autoplot
+#' @export
+ggplot2::autoplot
+
+# Column names used inside ggplot2::aes(), which R CMD check cannot see are
+# columns rather than stray globals.
+utils::globalVariables(c("tstart", "tstop", "y", "bin", "time", "value"))

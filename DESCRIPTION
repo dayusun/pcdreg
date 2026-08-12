@@ -21,7 +21,7 @@ Description: Fits semiparametric regression models to panel count data, that
 License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
-Imports: Rcpp, stats, graphics
+Imports: Rcpp, ggplot2, stats, utils
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: testthat (>= 3.0.0), knitr, rmarkdown
 VignetteBuilder: knitr

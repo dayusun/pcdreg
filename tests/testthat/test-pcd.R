@@ -57,29 +57,60 @@ test_that("is.pcd discriminates", {
   expect_false(is.pcd(1:3))
 })
 
-test_that("the data plot draws for both orderings and subsets large studies", {
-  f <- tempfile(fileext = ".png")
-  on.exit(unlink(f), add = TRUE)
+test_that("the data plot is a ggplot with one tile per examination interval", {
+  skip_if_not_installed("ggplot2")
   set.seed(1)
   d <- r_panel_count(30)
   y <- with(d, pcd(id, tstart, tstop, count))
 
+  p <- autoplot(y)
+  expect_s3_class(p, "ggplot")
+  # One tile per examination, and the tiles span intervals rather than points.
+  expect_equal(nrow(p$data), sum(!is.na(d$count)))
+  expect_true(all(p$data$tstop > p$data$tstart))
+  # Each subject's first tile starts at zero and the rest abut.
+  first <- !duplicated(p$data$y)
+  expect_true(all(p$data$tstart[first] == 0))
+
   for (by in c("followup", "events", "none")) {
-    grDevices::png(f)
-    expect_silent(plot(y, order_by = by))
-    grDevices::dev.off()
-    expect_gt(file.size(f), 1000)
+    expect_s3_class(autoplot(y, order_by = by), "ggplot")
   }
+  expect_error(autoplot(y, order_by = "nonsense"))
 
-  # Large studies are thinned to keep the picture readable, and say so.
+  # plot() is the same picture, so it stays usable from a script.
+  expect_s3_class(plot(y), "ggplot")
+
+  # It renders without warnings about missing or dropped values.
+  f <- tempfile(fileext = ".png")
+  on.exit(unlink(f), add = TRUE)
+  expect_silent(ggplot2::ggsave(f, p, width = 6, height = 4, dpi = 72))
+  expect_gt(file.size(f), 1000)
+})
+
+test_that("large studies are thinned and identifiers survive", {
+  skip_if_not_installed("ggplot2")
+  set.seed(2)
   big <- with(r_panel_count(80), pcd(id, tstart, tstop, count))
-  grDevices::png(f)
-  expect_message(plot(big, max_subjects = 20), "20 of 80")
-  grDevices::dev.off()
+  expect_message(p <- autoplot(big, max_subjects = 20), "20 of 80")
+  expect_equal(length(unique(p$data$y)), 20L)
 
-  # Character identifiers survive to the axis labels.
+  d <- r_panel_count(20)
   d$id <- paste0("s", d$id)
-  grDevices::png(f)
-  expect_silent(plot(with(d, pcd(id, tstart, tstop, count))))
-  grDevices::dev.off()
+  expect_s3_class(autoplot(with(d, pcd(id, tstart, tstop, count))), "ggplot")
+})
+
+test_that("the baseline plot is a ggplot for both models", {
+  skip_if_not_installed("ggplot2")
+  set.seed(3)
+  d <- r_panel_count(40)
+  for (mod in c("rate", "mean")) {
+    fit <- pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, data = d,
+                  model = mod)
+    p <- autoplot(fit)
+    expect_s3_class(p, "ggplot")
+    # Starts at the origin, one step per grid time.
+    expect_equal(nrow(p$data), fit$ngrid + 1L)
+    expect_equal(p$data$value[1], 0)
+    expect_s3_class(plot(fit), "ggplot")
+  }
 })

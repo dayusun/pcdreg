@@ -217,13 +217,69 @@ is.na.pcd <- function(x) {
 #' @export
 as.character.pcd <- function(x, ...) format(x, ...)
 
+# The sequential single-hue ramp used for counts.  Magnitude belongs on one hue
+# running light to dark, so that the lightest step reads as "near zero" and
+# recedes toward the panel, and darkness reads as more events.
+pcd_ramp <- c("#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf",
+              "#184f95", "#0d366b")
+
+# Reduce a pcd object to one row per examination interval, ready to draw:
+# the interval it spans, the count in it, and the subject's row.
+pcd_tiles <- function(x, order_by, max_subjects) {
+  m <- unclass(x)
+  labels <- attr(x, "labels")
+
+  keep <- m[, "exam"] == 1
+  id <- m[keep, "id"]
+  tstop <- m[keep, "tstop"]
+  count <- m[keep, "count"]
+  ord <- order(id, tstop)
+  id <- id[ord]; tstop <- tstop[ord]; count <- count[ord]
+  # A panel runs from the subject's previous examination to this one.
+  tstart <- unsplit(lapply(split(tstop, id),
+                           function(v) c(0, v[-length(v)])), id)
+
+  ids <- unique(id)
+  last <- vapply(ids, function(i) max(tstop[id == i]), numeric(1))
+  total <- vapply(ids, function(i) sum(count[id == i]), numeric(1))
+  ids <- ids[switch(order_by, followup = order(last), events = order(total),
+                    none = seq_along(ids))]
+
+  if (length(ids) > max_subjects) {
+    ids <- ids[unique(round(seq(1, length(ids), length.out = max_subjects)))]
+    message("Showing ", length(ids), " of ", length(unique(id)), " subjects.")
+  }
+
+  y <- match(id, ids)
+  ok <- !is.na(y)
+  list(
+    data = data.frame(tstart = tstart[ok], tstop = tstop[ok],
+                      count = count[ok], y = y[ok]),
+    ids = ids,
+    labels = if (is.null(labels)) as.character(ids) else labels[ids]
+  )
+}
+
+# Bin counts onto the ramp.  Integer counts get one step each while they fit,
+# so the legend reads as the counts themselves rather than as arbitrary cuts.
+pcd_bins <- function(count, palette) {
+  mx <- max(count)
+  brk <- if (mx + 1 <= length(palette)) 0:mx else
+    unique(c(0, round(seq(1, mx, length.out = length(palette) - 1L))))
+  cols <- palette[seq_along(brk)]
+  hi <- c(brk[-1] - 1, mx)
+  labs <- ifelse(brk == hi, as.character(brk), paste0(brk, "-", hi))
+  list(bin = factor(labs[findInterval(count, brk)], levels = labs),
+       values = stats::setNames(cols, labs))
+}
+
 #' Plot panel count data
 #'
-#' Draws the observation pattern: one row per subject, their follow-up as a
-#' line, and a circle at each examination with area proportional to the number
-#' of events recorded there.
+#' Draws the observation pattern as tiles: one row per subject, one tile per
+#' examination interval spanning the time it covers, shaded by the number of
+#' events recorded in it.
 #'
-#' @param x A [pcd()] object.
+#' @param object,x A [pcd()] object.
 #' @param order_by How to order subjects up the vertical axis. `"followup"`
 #'   sorts by the time of the last examination, which makes the censoring
 #'   pattern legible; `"events"` sorts by the total number of events; `"none"`
@@ -231,77 +287,78 @@ as.character.pcd <- function(x, ...) format(x, ...)
 #' @param max_subjects Draw at most this many subjects, taken as an evenly
 #'   spaced sample so the picture stays readable for large studies. A message
 #'   reports how many were shown.
-#' @param cex_max Radius scaling for the largest count.
-#' @param xlab,ylab,col,... Passed to the underlying plotting calls.
+#' @param palette Fill colours, lightest first. The default is a single-hue
+#'   sequential ramp, which is where a magnitude belongs.
+#' @param ... Ignored.
 #'
-#' @return `x`, invisibly.
+#' @return A [ggplot2::ggplot()] object, so it can be titled, faceted or
+#'   themed like any other.
 #'
 #' @details
-#' What the picture is for: panel count data have two features that decide which
-#' model and which estimator make sense, and both are visible here. Whether
-#' examination times line up across subjects determines the size of the pooled
-#' grid and so the cost of fitting the rate model, and whether follow-up ends at
-#' widely differing times determines how much of the baseline is estimated from
-#' few subjects.
+#' The tile is the unit of observation. A panel count is attributed to the
+#' interval \eqn{(T_{i,j-1}, T_{ij}]} rather than to an instant, so drawing the
+#' intervals rather than points at the examination times is what the data
+#' actually says: a wide pale tile and a narrow dark one can carry the same
+#' count while meaning very different things about the rate.
 #'
-#' Open circles mark examinations where no events were recorded, so a subject
-#' with a long line of open circles is contributing information about the
-#' baseline without contributing events.
+#' Two features decide how an analysis will go and both are visible here.
+#' Whether examination times line up across subjects sets the size of the pooled
+#' grid and so the cost of fitting the rate model; and how ragged the right hand
+#' edge is shows how much of the tail of the baseline rests on a handful of
+#' subjects.
 #'
 #' @examples
 #' set.seed(1)
 #' d <- r_panel_count(40)
-#' plot(with(d, pcd(id, tstart, tstop, count)))
+#' autoplot(with(d, pcd(id, tstart, tstop, count)))
 #'
-#' @seealso [plot.pcdfit()] for the fitted baseline function.
+#' @seealso [autoplot.pcdfit()] for the fitted baseline function.
 #' @export
-plot.pcd <- function(x, order_by = c("followup", "events", "none"),
-                     max_subjects = 60L, cex_max = 2.5,
-                     xlab = "Time", ylab = "Subject", col = "#2B4C7E", ...) {
+autoplot.pcd <- function(object, order_by = c("followup", "events", "none"),
+                         max_subjects = 60L, palette = NULL, ...) {
   order_by <- match.arg(order_by)
-  m <- unclass(x)
-  labels <- attr(x, "labels")
+  if (is.null(palette)) palette <- pcd_ramp
 
-  exam <- m[, "exam"] == 1
-  id <- m[, "id"]
-  ids <- sort(unique(id))
+  t <- pcd_tiles(object, order_by, max_subjects)
+  b <- pcd_bins(t$data$count, palette)
+  t$data$bin <- b$bin
 
-  last <- vapply(ids, function(i) max(m[id == i & exam, "tstop"]), numeric(1))
-  total <- vapply(ids, function(i) sum(m[id == i & exam, "count"]), numeric(1))
-  ord <- switch(order_by,
-                followup = order(last),
-                events = order(total),
-                none = seq_along(ids))
-  ids <- ids[ord]
-  last <- last[ord]
+  at <- unique(round(seq(1, length(t$ids), length.out = min(6, length(t$ids)))))
 
-  if (length(ids) > max_subjects) {
-    keep <- unique(round(seq(1, length(ids), length.out = max_subjects)))
-    message("Showing ", length(keep), " of ", length(ids), " subjects.")
-    ids <- ids[keep]
-    last <- last[keep]
-  }
-  pos <- seq_along(ids)
+  ggplot2::ggplot(t$data) +
+    # A hairline of panel colour between tiles keeps neighbouring intervals
+    # separable where a subject is examined often.
+    ggplot2::geom_rect(
+      ggplot2::aes(xmin = tstart, xmax = tstop, ymin = y - 0.42,
+                   ymax = y + 0.42, fill = bin), colour = NA) +
+    ggplot2::scale_fill_manual(values = b$values, name = "Events",
+                               drop = FALSE) +
+    ggplot2::scale_y_continuous(breaks = at, labels = t$labels[at],
+                                expand = ggplot2::expansion(add = 0.6)) +
+    ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0, 0.02))) +
+    ggplot2::labs(x = "Time", y = "Subject") +
+    pcd_theme() +
+    ggplot2::theme(panel.grid.major.y = ggplot2::element_blank())
+}
 
-  counts <- m[exam, "count"]
-  scale <- if (max(counts) > 0) cex_max / sqrt(max(counts)) else cex_max
+#' @rdname autoplot.pcd
+#' @export
+plot.pcd <- function(x, ...) autoplot.pcd(x, ...)
 
-  graphics::plot(range(c(0, m[, "tstop"])), c(0.5, length(ids) + 0.5),
-                 type = "n", xlab = xlab, ylab = ylab, yaxt = "n", ...)
-  graphics::segments(0, pos, last, pos, col = "grey75")
-  for (k in seq_along(ids)) {
-    at <- id == ids[k] & exam
-    cnt <- m[at, "count"]
-    graphics::points(m[at, "tstop"], rep(pos[k], sum(at)),
-                     cex = ifelse(cnt > 0, scale * sqrt(cnt), 0.5),
-                     pch = ifelse(cnt > 0, 19, 1),
-                     col = ifelse(cnt > 0, col, "grey55"))
-  }
-  ticks <- unique(round(seq(1, length(ids), length.out = min(6, length(ids)))))
-  shown <- if (is.null(labels)) ids[ticks] else labels[ids[ticks]]
-  graphics::axis(2, at = pos[ticks], labels = shown, las = 1,
-                 cex.axis = 0.8, tick = FALSE)
-  invisible(x)
+# Recessive axes and grid: the marks carry the information, not the furniture.
+pcd_theme <- function() {
+  ggplot2::theme_minimal(base_size = 11) +
+    ggplot2::theme(
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_line(colour = "#ebeae6",
+                                               linewidth = 0.3),
+      axis.text = ggplot2::element_text(colour = "#52514e"),
+      axis.title = ggplot2::element_text(colour = "#52514e"),
+      legend.title = ggplot2::element_text(colour = "#0b0b0b", size = 9),
+      legend.text = ggplot2::element_text(colour = "#52514e", size = 8),
+      legend.key.size = ggplot2::unit(0.8, "lines"),
+      plot.title = ggplot2::element_text(colour = "#0b0b0b", size = 12)
+    )
 }
 
 #' Test for a panel count response

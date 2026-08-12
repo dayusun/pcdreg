@@ -209,24 +209,40 @@ print.summary.pcdfit <- function(x, digits = max(3L, getOption("digits") - 3L),
 
 #' Plot the estimated baseline function
 #'
-#' @param x A fitted [pcdreg()] model.
-#' @param xlab,ylab,type Passed to [graphics::plot()], with defaults suited to a
-#'   step function and to whichever baseline the model estimates.
-#' @param ... Further graphical parameters.
-#' @return `x`, invisibly.
+#' @param object,x A fitted [pcdreg()] model.
+#' @param ... Ignored.
+#'
+#' @return A [ggplot2::ggplot()] object: a step function of the cumulative
+#'   baseline rate for the rate model, or of the baseline mean for the means
+#'   model.
+#'
+#' @details
+#' The rate model's \eqn{\hat\Lambda} increases by construction. The means
+#' model's \eqn{\hat\mu} need not, and with covariates that fluctuate it
+#' generally does not; it is drawn as estimated rather than forced upwards,
+#' because that behaviour is the point of the comparison between the two models.
+#'
 #' @examples
 #' set.seed(1)
 #' d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
-#' plot(pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, d))
+#' autoplot(pcdreg(pcd(id, tstart, tstop, count) ~ x1 + x2, d))
 #' @export
-plot.pcdfit <- function(x, xlab = "Time", ylab = NULL, type = "s", ...) {
-  b <- x$baseline
-  column <- pcd_baseline_column(x)
-  if (is.null(ylab)) {
-    ylab <- if (pcd_is_mean(x)) expression(hat(mu)(t)) else
-      expression(hat(Lambda)(t))
-  }
-  graphics::plot(c(0, b$time), c(0, b[[column]]), xlab = xlab, ylab = ylab,
-                 type = type, ...)
-  invisible(x)
+autoplot.pcdfit <- function(object, ...) {
+  b <- object$baseline
+  is_mean <- pcd_is_mean(object)
+  column <- pcd_baseline_column(object)
+  df <- data.frame(time = c(0, b$time), value = c(0, b[[column]]))
+
+  ggplot2::ggplot(df, ggplot2::aes(x = time, y = value)) +
+    ggplot2::geom_step(colour = "#2a78d6", linewidth = 0.6) +
+    ggplot2::labs(x = "Time",
+                  y = if (is_mean) expression(hat(mu)(t)) else
+                    expression(hat(Lambda)(t))) +
+    ggplot2::scale_x_continuous(
+      expand = ggplot2::expansion(mult = c(0.01, 0.02))) +
+    pcd_theme()
 }
+
+#' @rdname autoplot.pcdfit
+#' @export
+plot.pcdfit <- function(x, ...) autoplot.pcdfit(x, ...)
