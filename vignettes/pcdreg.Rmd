@@ -13,7 +13,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6,
 ```
 
 ```{r setup}
-library(panelrate)
+library(pcdreg)
 ```
 
 ## The data and the model
@@ -26,7 +26,7 @@ claims tallied at renewal all have this shape.
 
 Write $N_i(t)$ for the number of events subject $i$ has experienced by time $t$,
 observed at times $T_{i1} < \dots < T_{iJ_i}$, and $\Delta N_{ij}$ for the count
-in $(T_{i,j-1}, T_{ij}]$. `panelrate` fits the proportional rate model
+in $(T_{i,j-1}, T_{ij}]$. `panelrate()` fits the proportional rate model
 
 $$E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t),$$
 

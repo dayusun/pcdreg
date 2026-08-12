@@ -1,4 +1,4 @@
 library(testthat)
-library(panelrate)
+library(pcdreg)
 
-test_check("panelrate")
+test_check("pcdreg")

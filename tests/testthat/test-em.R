@@ -10,7 +10,7 @@ test_that("the compiled EM matches an independent pure R implementation", {
   # in the formulas.
   d <- prep(make_data(25))
   iters <- 200L
-  got <- panelrate:::em_fit_cpp(d$X, d$subj, d$grid, d$panel, d$dN,
+  got <- pcdreg:::em_fit_cpp(d$X, d$subj, d$grid, d$panel, d$dN,
                                 d$panelsubj, d$n, d$K, c(0, 0),
                                 rep(1 / d$K, d$K), iters, 1e-15, FALSE)
   want <- ref_em(d, maxit = iters, reltol = 1e-15)
@@ -39,7 +39,7 @@ test_that("acceleration changes the path but not the destination", {
 
 test_that("the solution satisfies the score and fixed point equations", {
   d <- prep(make_data(30))
-  fit <- panelrate:::em_fit_cpp(d$X, d$subj, d$grid, d$panel, d$dN,
+  fit <- pcdreg:::em_fit_cpp(d$X, d$subj, d$grid, d$panel, d$dN,
                                 d$panelsubj, d$n, d$K, c(0, 0),
                                 rep(1 / d$K, d$K), 5000L, 1e-12, TRUE)
   expect_true(fit$converged)

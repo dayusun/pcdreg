@@ -1,4 +1,4 @@
-# panelrate 0.1.0
+# pcdreg 0.1.0
 
 * First release.
 

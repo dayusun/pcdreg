@@ -1,6 +1,6 @@
-#include "panelrate.h"
+#include "pcdreg.h"
 
-using namespace panelrate;
+using namespace pcdreg;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 

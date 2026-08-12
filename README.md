@@ -1,10 +1,10 @@
 
 
-# panelrate
+# pcdreg
 
 Regression analysis of **panel count data**: recurrent events observed only at
 intermittent examination times, so that you know how many events happened
-between visits but not when. `panelrate` fits the semiparametric proportional
+between visits but not when. `pcdreg` fits the semiparametric proportional
 rate model
 
 $$E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t),$$
@@ -27,7 +27,7 @@ the same way a hazard ratio does in survival analysis.
 
 ```r
 # install.packages("remotes")
-remotes::install_github("commintern/panelrate")
+remotes::install_github("commintern/pcdreg")
 ```
 
 ## Usage
@@ -38,7 +38,7 @@ at `tstop`; a row whose `count` is `NA` records only that a covariate changed.
 
 
 ``` r
-library(panelrate)
+library(pcdreg)
 set.seed(1)
 
 d <- r_panel_count(150, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
@@ -136,5 +136,5 @@ head(predict(fit, d, type = "mean"))
 ## Citation
 
 ```r
-citation("panelrate")
+citation("pcdreg")
 ```

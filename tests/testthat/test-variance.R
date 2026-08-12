@@ -6,7 +6,7 @@ make_data <- function(n = 40, seed = 20240202, ...) {
 test_that("Omega and S match the pure R versions of the paper's formulas", {
   d <- prep(make_data(30))
   fit <- ref_em(d)
-  got <- panelrate:::covariance_cpp(d$X, d$subj, d$grid, d$panel, d$dN,
+  got <- pcdreg:::covariance_cpp(d$X, d$subj, d$grid, d$panel, d$dN,
                                     d$panelsubj, d$n, d$K, fit$beta,
                                     fit$lambda)
   want <- ref_covariance(d, fit$beta, fit$lambda)

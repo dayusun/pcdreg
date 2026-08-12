@@ -1,6 +1,6 @@
-Package: panelrate
+Package: pcdreg
 Type: Package
-Title: Robust Semiparametric Rate Regression for Panel Count Data
+Title: Semiparametric Regression for Panel Count Data
 Version: 0.1.0
 Authors@R: person("Dayu", "Sun", email = "dayusun@iu.edu",
                   role = c("aut", "cre"))
@@ -25,7 +25,7 @@ Suggests: testthat (>= 3.0.0), knitr, rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
-URL: https://github.com/commintern/panelrate
-BugReports: https://github.com/commintern/panelrate/issues
+URL: https://github.com/commintern/pcdreg
+BugReports: https://github.com/commintern/pcdreg/issues
 Config/testthat/edition: 3
 NeedsCompilation: yes

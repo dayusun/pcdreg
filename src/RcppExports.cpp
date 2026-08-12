@@ -13,7 +13,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // em_fit_cpp
 Rcpp::List em_fit_cpp(const arma::mat& X, const arma::uvec& subj, const arma::uvec& grid, const arma::uvec& panel, const arma::vec& dN, const arma::uvec& panelsubj, arma::uword n, arma::uword K, arma::vec beta, arma::vec lambda, arma::uword maxit, double reltol, bool accelerate);
-RcppExport SEXP _panelrate_em_fit_cpp(SEXP XSEXP, SEXP subjSEXP, SEXP gridSEXP, SEXP panelSEXP, SEXP dNSEXP, SEXP panelsubjSEXP, SEXP nSEXP, SEXP KSEXP, SEXP betaSEXP, SEXP lambdaSEXP, SEXP maxitSEXP, SEXP reltolSEXP, SEXP accelerateSEXP) {
+RcppExport SEXP _pcdreg_em_fit_cpp(SEXP XSEXP, SEXP subjSEXP, SEXP gridSEXP, SEXP panelSEXP, SEXP dNSEXP, SEXP panelsubjSEXP, SEXP nSEXP, SEXP KSEXP, SEXP betaSEXP, SEXP lambdaSEXP, SEXP maxitSEXP, SEXP reltolSEXP, SEXP accelerateSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -36,7 +36,7 @@ END_RCPP
 }
 // covariance_cpp
 Rcpp::List covariance_cpp(const arma::mat& X, const arma::uvec& subj, const arma::uvec& grid, const arma::uvec& panel, const arma::vec& dN, const arma::uvec& panelsubj, arma::uword n, arma::uword K, const arma::vec& beta, const arma::vec& lambda);
-RcppExport SEXP _panelrate_covariance_cpp(SEXP XSEXP, SEXP subjSEXP, SEXP gridSEXP, SEXP panelSEXP, SEXP dNSEXP, SEXP panelsubjSEXP, SEXP nSEXP, SEXP KSEXP, SEXP betaSEXP, SEXP lambdaSEXP) {
+RcppExport SEXP _pcdreg_covariance_cpp(SEXP XSEXP, SEXP subjSEXP, SEXP gridSEXP, SEXP panelSEXP, SEXP dNSEXP, SEXP panelsubjSEXP, SEXP nSEXP, SEXP KSEXP, SEXP betaSEXP, SEXP lambdaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -56,7 +56,7 @@ END_RCPP
 }
 // profile_gradient_cpp
 Rcpp::List profile_gradient_cpp(const arma::mat& X, const arma::uvec& subj, const arma::uvec& grid, const arma::uvec& panel, const arma::vec& dN, const arma::uvec& panelsubj, arma::uword n, arma::uword K, const arma::vec& beta, const arma::vec& lambda, double h, arma::uword maxit, double reltol);
-RcppExport SEXP _panelrate_profile_gradient_cpp(SEXP XSEXP, SEXP subjSEXP, SEXP gridSEXP, SEXP panelSEXP, SEXP dNSEXP, SEXP panelsubjSEXP, SEXP nSEXP, SEXP KSEXP, SEXP betaSEXP, SEXP lambdaSEXP, SEXP hSEXP, SEXP maxitSEXP, SEXP reltolSEXP) {
+RcppExport SEXP _pcdreg_profile_gradient_cpp(SEXP XSEXP, SEXP subjSEXP, SEXP gridSEXP, SEXP panelSEXP, SEXP dNSEXP, SEXP panelsubjSEXP, SEXP nSEXP, SEXP KSEXP, SEXP betaSEXP, SEXP lambdaSEXP, SEXP hSEXP, SEXP maxitSEXP, SEXP reltolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -79,13 +79,13 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_panelrate_em_fit_cpp", (DL_FUNC) &_panelrate_em_fit_cpp, 13},
-    {"_panelrate_covariance_cpp", (DL_FUNC) &_panelrate_covariance_cpp, 10},
-    {"_panelrate_profile_gradient_cpp", (DL_FUNC) &_panelrate_profile_gradient_cpp, 13},
+    {"_pcdreg_em_fit_cpp", (DL_FUNC) &_pcdreg_em_fit_cpp, 13},
+    {"_pcdreg_covariance_cpp", (DL_FUNC) &_pcdreg_covariance_cpp, 10},
+    {"_pcdreg_profile_gradient_cpp", (DL_FUNC) &_pcdreg_profile_gradient_cpp, 13},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_panelrate(DllInfo *dll) {
+RcppExport void R_init_pcdreg(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

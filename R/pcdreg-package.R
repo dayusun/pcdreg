@@ -1,5 +1,5 @@
 #' @keywords internal
-#' @aliases panelrate-package
+#' @aliases pcdreg-package
 #'
 #' @description
 #' Panel count data arise when a recurrent event process is observed only at
@@ -21,12 +21,14 @@
 #' A robust approach for regression analysis of panel count data.
 #' *Bernoulli* **30**(4), 3251--3275. \doi{10.3150/23-BEJ1713}
 #'
-#' @useDynLib panelrate, .registration = TRUE
+#' @useDynLib pcdreg, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
-#' The S3 generics below are imported so that the methods can be registered
-#' against them when the package is loaded without stats attached.
-#'
 #' @importFrom stats coef confint logLik nobs predict vcov
 #' @importFrom stats delete.response model.frame model.matrix model.response
 #' @importFrom stats na.pass pnorm printCoefmat qnorm terms
 "_PACKAGE"
+
+# The first stats import above brings in the S3 generics themselves, so that the
+# methods can be registered against them when the package is loaded without
+# stats attached.  Without it the package fails to load with only its stated
+# dependencies, which no session with stats already attached will reveal.

@@ -1,5 +1,5 @@
-#ifndef PANELRATE_H
-#define PANELRATE_H
+#ifndef PCDREG_H
+#define PCDREG_H
 
 #include <RcppArmadillo.h>
 
@@ -19,7 +19,7 @@
 // Lambda is a step function with jump lambda_k at the pooled distinct
 // examination time t_k, k = 1, ..., K.
 
-namespace panelrate {
+namespace pcdreg {
 
 // Expanded data layout.
 //
@@ -351,6 +351,6 @@ inline arma::vec profile_lambda(const PanelData& d, const arma::vec& eta,
   return lambda;
 }
 
-}  // namespace panelrate
+}  // namespace pcdreg
 
-#endif  // PANELRATE_H
+#endif  // PCDREG_H
