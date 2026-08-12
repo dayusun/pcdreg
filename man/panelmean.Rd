@@ -55,6 +55,15 @@ constrains the fitted \eqn{\hat\mu} to increase; when covariate values
 fluctuate it may well not, which is the difficulty with the means model that
 motivates the rate model.
 }
+\section{Specifying the model}{
+
+Identical to \code{\link[=panelrate]{panelrate()}}: the left hand side is a \code{\link[=PanelCount]{PanelCount()}} object and
+the right hand side an ordinary model formula, with no intercept. The two
+fitters accept exactly the same data, so a model can be refitted under the
+other by changing the function name alone. See
+\code{vignette("data-preparation")} for the data layouts.
+}
+
 \examples{
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))

@@ -1,6 +1,12 @@
 #ifndef PCDREG_H
 #define PCDREG_H
 
+// Armadillo's default warning level writes messages such as "solve(): system is
+// singular" straight to stderr, bypassing R's conditions entirely.  A package
+// should raise those through R instead, which the callers of safe_solve() do,
+// so quieten the direct output.
+#define ARMA_WARN_LEVEL 1
+
 #include <RcppArmadillo.h>
 
 #include <algorithm>
@@ -244,13 +250,19 @@ inline arma::vec subject_loglik(const PanelData& d, const arma::vec& denom) {
 
 // Solve A x = b for a symmetric positive semidefinite A, reporting failure
 // rather than returning silently wrong numbers.
+//
+// Both attempts pass no_approx: a singular information matrix means the
+// covariates carry no information about some direction in beta, which is a
+// modelling problem for the caller to hear about, not something to paper over
+// with an approximate solution.
 inline bool safe_solve(const arma::mat& A, const arma::vec& b, arma::vec& out) {
   const arma::mat sym = arma::symmatu(A);
   if (arma::solve(out, sym, b,
                   arma::solve_opts::likely_sympd + arma::solve_opts::no_approx)) {
     return out.is_finite();
   }
-  return arma::solve(out, sym, b) && out.is_finite();
+  return arma::solve(out, sym, b, arma::solve_opts::no_approx) &&
+         out.is_finite();
 }
 
 // Relative change used as the convergence criterion, applied to both beta and

@@ -68,6 +68,32 @@ order \eqn{n^{-1/2}}, which is coarse at small sample sizes, and it costs one
 baseline-only fit per coefficient. \code{"information"} estimates the same matrix
 far more cheaply and more stably.
 }
+\section{Specifying the model}{
+
+The left hand side is always a \code{\link[=PanelCount]{PanelCount()}} object, which carries the
+subject, the interval and the event count. The right hand side is an ordinary
+model formula, so interactions, transformations, factors and \code{.} all behave
+as usual:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{PanelCount(id, tstart, tstop, count) ~ x1 + x2
+PanelCount(id, tstart, tstop, count) ~ x1 * x2 + log(x3)
+PanelCount(id, time, count)          ~ .
+}\if{html}{\out{</div>}}
+
+The dot expands to every column that is not part of the response, so the
+identifier, times and counts are excluded automatically.
+
+No intercept is fitted. A constant column cannot be distinguished from a
+rescaling of \eqn{\Lambda}, so it is dropped and the baseline is reported
+separately by \code{\link[=baseline]{baseline()}}. Adding \code{- 1} changes nothing. One consequence is
+that shifting a covariate by a constant \eqn{c} leaves \eqn{\beta} alone and
+rescales the baseline by \eqn{e^{-c\beta}}: centring covariates moves the
+baseline, not the coefficients.
+
+\code{vignette("data-preparation")} covers the data layouts in full, including the
+conversion from cumulative counts, which is the mistake most worth avoiding.
+}
+
 \examples{
 set.seed(1)
 d <- r_panel_count(80, beta = c(1, -1), lambda = function(t) 8 / (1 + t))

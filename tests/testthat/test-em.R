@@ -100,6 +100,22 @@ test_that("starting values do not change the solution", {
                          data = d, init = 1), "has length 1")
 })
 
+test_that("collinear covariates raise an error rather than an approximation", {
+  # Armadillo will happily return a least squares approximation for a singular
+  # system, which would look like a fit but mean nothing. Both fitters ask it
+  # not to, and report the problem instead.
+  d <- make_data(30)
+  d$copy <- d$x1
+  expect_error(
+    panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + copy, data = d),
+    "singular"
+  )
+  expect_error(
+    panelmean(PanelCount(id, tstart, tstop, count) ~ x1 + copy, data = d),
+    "singular"
+  )
+})
+
 test_that("failure to converge is reported rather than hidden", {
   expect_warning(
     panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2,

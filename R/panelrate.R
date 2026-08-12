@@ -65,6 +65,31 @@ panelrate_control <- function(maxit = 2000L, reltol = 1e-7,
 #'   baseline-only fit per coefficient, so it is off by default.
 #' @param init Optional starting values for the coefficients.
 #'
+#' @section Specifying the model:
+#' The left hand side is always a [PanelCount()] object, which carries the
+#' subject, the interval and the event count. The right hand side is an ordinary
+#' model formula, so interactions, transformations, factors and `.` all behave
+#' as usual:
+#'
+#' ```
+#' PanelCount(id, tstart, tstop, count) ~ x1 + x2
+#' PanelCount(id, tstart, tstop, count) ~ x1 * x2 + log(x3)
+#' PanelCount(id, time, count)          ~ .
+#' ```
+#'
+#' The dot expands to every column that is not part of the response, so the
+#' identifier, times and counts are excluded automatically.
+#'
+#' No intercept is fitted. A constant column cannot be distinguished from a
+#' rescaling of \eqn{\Lambda}, so it is dropped and the baseline is reported
+#' separately by [baseline()]. Adding `- 1` changes nothing. One consequence is
+#' that shifting a covariate by a constant \eqn{c} leaves \eqn{\beta} alone and
+#' rescales the baseline by \eqn{e^{-c\beta}}: centring covariates moves the
+#' baseline, not the coefficients.
+#'
+#' `vignette("data-preparation")` covers the data layouts in full, including the
+#' conversion from cumulative counts, which is the mistake most worth avoiding.
+#'
 #' @details
 #' The likelihood maximised is the one a nonhomogeneous Poisson process would
 #' give. That assumption is a working device: it makes the EM algorithm

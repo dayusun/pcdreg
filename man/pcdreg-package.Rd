@@ -28,8 +28,8 @@ A robust approach for regression analysis of panel count data.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/commintern/pcdreg}
-  \item Report bugs at \url{https://github.com/commintern/pcdreg/issues}
+  \item \url{https://github.com/dayusun/pcdreg}
+  \item Report bugs at \url{https://github.com/dayusun/pcdreg/issues}
 }
 
 }

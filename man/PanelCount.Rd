@@ -32,30 +32,71 @@ Creates the response object used on the left hand side of a \code{\link[=panelra
 formula, in the same spirit as \code{\link[survival:Surv]{survival::Surv()}}.
 }
 \details{
-There are two forms, distinguished by the number of arguments.
+There are two forms, distinguished by the number of arguments. Which one you
+need depends on a single question: does any covariate change value during
+follow-up?
 
 \code{PanelCount(id, time, count)} is for data with one row per examination, which
-is what time-invariant covariates need. Interval starts are filled in as the
-previous examination time of the same subject, with the first interval
+is all that time-invariant covariates need. Interval starts are filled in as
+the previous examination time of the same subject, with the first interval
 starting at zero.
 
-\code{PanelCount(id, tstart, tstop, count)} is the counting process form, needed
-when covariates vary over time. Each row gives an interval \verb{(tstart, tstop]}
-over which the covariates in that row are constant. A row whose \code{count} is a
-number records an examination at \code{tstop}, with \code{count} events since the
-previous examination; a row whose \code{count} is \code{NA} records only that the
-covariates changed at \code{tstop}. Within a subject the intervals must be
-contiguous and ordered, exactly as for a time-varying \code{\link[survival:coxph]{survival::coxph()}} fit.
-
-A subject's follow-up ends at their last examination. Intervals beyond it
-carry no information about the model and are dropped, with a message.
+\code{PanelCount(id, tstart, tstop, count)} is the counting process form, needed as
+soon as a covariate moves. Each row gives an interval \verb{(tstart, tstop]} over
+which the covariates in that row are constant, exactly as for a time-varying
+\code{\link[survival:coxph]{survival::coxph()}} fit. The \code{count} column distinguishes the two kinds of
+row:
+\itemize{
+\item a number means the row ends at an \strong{examination}, and that many events
+occurred since the previous examination;
+\item \code{NA} means the row ends at a \strong{covariate change} rather than an
+examination.
 }
+
+There is no separate event indicator; the presence or absence of a count is
+the indicator.
+}
+\section{Counts are increments, not totals}{
+
+\code{count} must be the number of events since the previous examination,
+\eqn{\Delta N_{ij}}, not the running total \eqn{N_i(T_{ij})}. Data recorded
+cumulatively must be differenced within subject first. This is not something
+the package can detect for you, and getting it wrong inflates the event count
+and biases the coefficients rather than raising an error. A quick check after
+fitting is that \code{fit$nevent} matches the number of events you believe you
+have. See \code{vignette("data-preparation")} for the conversion.
+}
+
+\section{What the data must satisfy}{
+
+Checked before any arithmetic, naming the offending subject when a check
+fails:
+\itemize{
+\item follow-up starts at time zero, since the models integrate from there;
+\item intervals within a subject are contiguous, with no gaps or overlaps;
+\item no subject has two rows ending at the same time;
+\item every subject has at least one examination;
+\item counts are non-negative whole numbers.
+}
+
+Row order is irrelevant: the data are sorted internally. Identifiers may be
+numeric, character or factor, and need not be consecutive.
+
+A subject's follow-up ends at their last examination, because the likelihood
+runs only over \eqn{j = 1, \ldots, J_i}. Rows lying entirely beyond it carry
+no information and are dropped, with a message saying how many. A censoring
+row appended after the final visit is the usual reason for seeing it.
+}
+
 \examples{
-# One row per examination.
+# One row per examination: subject 1 seen at 0.5 and 1.2 with 2 then 0
+# events, subject 2 seen once at 0.8 with 3.
 PanelCount(c(1, 1, 2), c(0.5, 1.2, 0.8), c(2, 0, 3))
 
-# Counting process form: subject 1's covariates change at t = 0.9, between
-# examinations at t = 0.5 and t = 1.2.
+# Counting process form. Subject 1's covariates change at t = 0.9, part way
+# through the examination interval (0.5, 1.2], so that interval needs two
+# rows: the first ends at the change and carries NA, the second ends at the
+# examination and carries its count.
 PanelCount(
   id     = c(1, 1, 1, 2),
   time   = c(0.0, 0.5, 0.9, 0.0),
@@ -63,7 +104,15 @@ PanelCount(
   count  = c(2, NA, 0, 3)
 )
 
+# Used on the left hand side of a formula, which is how you will normally
+# meet it.
+set.seed(1)
+d <- r_panel_count(40)
+fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+c(subjects = fit$n, examinations = fit$nexam, events = fit$nevent)
+
 }
 \seealso{
-\code{\link[=panelrate]{panelrate()}}
+\code{\link[=panelrate]{panelrate()}}, \code{\link[=panelmean]{panelmean()}}, and
+\code{vignette("data-preparation")} for converting data into this shape.
 }

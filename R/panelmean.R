@@ -57,6 +57,13 @@ panelmean_control <- function(maxit = 100L, reltol = 1e-9) {
 #' @param control A list from [panelmean_control()].
 #' @param init Optional starting values for the coefficients.
 #'
+#' @section Specifying the model:
+#' Identical to [panelrate()]: the left hand side is a [PanelCount()] object and
+#' the right hand side an ordinary model formula, with no intercept. The two
+#' fitters accept exactly the same data, so a model can be refitted under the
+#' other by changing the function name alone. See
+#' `vignette("data-preparation")` for the data layouts.
+#'
 #' @details
 #' The estimating equation is
 #' \deqn{U(\beta) = \sum_i \sum_j N_i(T_{ij}) \{ X_i(T_{ij}) - \bar x(T_{ij}) \},}
