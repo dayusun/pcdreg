@@ -7,17 +7,14 @@
 
 set -euo pipefail
 
-# `module` is a shell function from lmod and is not defined in a
-# non-interactive shell, so make sure it exists before using it.
-if ! command -v module >/dev/null 2>&1; then
-  for init in /apps/lmod/lmod/init/bash /usr/share/lmod/lmod/init/bash               /etc/profile.d/modules.sh /etc/profile.d/lmod.sh; do
-    [ -r "$init" ] && . "$init" && break
-  done
-fi
-
-module load R/4.4.0
-
-export R_LIBS_USER="${HOME}/R/pcdreg-4.4.0"
+# R is picked up directly rather than through lmod: `module` is a shell
+# function absent from non-interactive shells, and its MODULEPATH is not set
+# when lmod's init is sourced by hand.  This mirrors the newest jobs on this
+# cluster.
+R_VERSION=4.5.2
+export PATH=/apps/R/${R_VERSION}/bin:$PATH
+export LD_LIBRARY_PATH=/apps/R/${R_VERSION}/lib64/R/lib:${LD_LIBRARY_PATH:-}
+export R_LIBS_USER=${HOME}/R/pcdreg-${R_VERSION}
 mkdir -p "${R_LIBS_USER}"
 
 Rscript --vanilla -e '
