@@ -34,11 +34,11 @@ baseline-only fit per coefficient, so it is off by default.}
 \item{init}{Optional starting values for the coefficients.}
 }
 \value{
-An object of class \code{"panelrate"}, with components including
-\code{coefficients}, \code{baseline} (a data frame of jump sizes and the cumulative
-baseline rate), \code{Omega} and \code{S} (the two matrices of Section 4 of the
-paper), \code{vcov} (a list of the available covariance estimates), \code{loglik},
-and convergence information.
+An object of class \code{"panelrate"}, inheriting from \code{"pcdfit"}, with
+components including \code{coefficients}, \code{baseline} (a data frame of jump sizes
+and the cumulative baseline rate), \code{Omega} and \code{S} (the two matrices of
+Section 4 of the paper), \code{vcov} (a list of the available covariance
+estimates), \code{loglik}, and convergence information.
 }
 \description{
 Fits
@@ -53,7 +53,7 @@ give. That assumption is a working device: it makes the EM algorithm
 available, but the estimator remains consistent and asymptotically normal
 when it fails, and the default covariance estimator remains valid.
 
-Three covariance estimators are available through \code{\link[=vcov.panelrate]{vcov.panelrate()}}.
+Three covariance estimators are available through \code{\link[=vcov.pcdfit]{vcov.pcdfit()}}.
 \code{"robust"} is the sandwich \eqn{\Omega^{-1} S \Omega^{-1} / n}, which does not
 rely on the Poisson assumption and is the default. \code{"information"} is
 \eqn{S^{-1} / n}, valid only under that assumption but a fast substitute for
@@ -85,5 +85,5 @@ Murphy, S. A. and van der Vaart, A. W. (2000). On profile likelihood.
 \emph{Journal of the American Statistical Association} \strong{95}, 449--465.
 }
 \seealso{
-\code{\link[=PanelCount]{PanelCount()}}, \code{\link[=vcov.panelrate]{vcov.panelrate()}}, \code{\link[=r_panel_count]{r_panel_count()}}
+\code{\link[=PanelCount]{PanelCount()}}, \code{\link[=panelmean]{panelmean()}}, \code{\link[=vcov.pcdfit]{vcov.pcdfit()}}, \code{\link[=r_panel_count]{r_panel_count()}}
 }

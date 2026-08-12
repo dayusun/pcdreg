@@ -71,7 +71,7 @@ panelrate_control <- function(maxit = 2000L, reltol = 1e-7,
 #' available, but the estimator remains consistent and asymptotically normal
 #' when it fails, and the default covariance estimator remains valid.
 #'
-#' Three covariance estimators are available through [vcov.panelrate()].
+#' Three covariance estimators are available through [vcov.pcdfit()].
 #' `"robust"` is the sandwich \eqn{\Omega^{-1} S \Omega^{-1} / n}, which does not
 #' rely on the Poisson assumption and is the default. `"information"` is
 #' \eqn{S^{-1} / n}, valid only under that assumption but a fast substitute for
@@ -86,11 +86,11 @@ panelrate_control <- function(maxit = 2000L, reltol = 1e-7,
 #' baseline-only fit per coefficient. `"information"` estimates the same matrix
 #' far more cheaply and more stably.
 #'
-#' @return An object of class `"panelrate"`, with components including
-#'   `coefficients`, `baseline` (a data frame of jump sizes and the cumulative
-#'   baseline rate), `Omega` and `S` (the two matrices of Section 4 of the
-#'   paper), `vcov` (a list of the available covariance estimates), `loglik`,
-#'   and convergence information.
+#' @return An object of class `"panelrate"`, inheriting from `"pcdfit"`, with
+#'   components including `coefficients`, `baseline` (a data frame of jump sizes
+#'   and the cumulative baseline rate), `Omega` and `S` (the two matrices of
+#'   Section 4 of the paper), `vcov` (a list of the available covariance
+#'   estimates), `loglik`, and convergence information.
 #'
 #' @references
 #' Sun, D., Guo, Y., Li, Y., Tu, W. and Sun, J. (2024).
@@ -107,7 +107,7 @@ panelrate_control <- function(maxit = 2000L, reltol = 1e-7,
 #' fit
 #' summary(fit)
 #'
-#' @seealso [PanelCount()], [vcov.panelrate()], [r_panel_count()]
+#' @seealso [PanelCount()], [panelmean()], [vcov.pcdfit()], [r_panel_count()]
 #' @export
 panelrate <- function(formula, data, subset, na.action,
                       control = panelrate_control(), profile = FALSE,
