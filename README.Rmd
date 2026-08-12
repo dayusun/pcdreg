@@ -1,0 +1,100 @@
+---
+output: github_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.path = "man/figures/")
+```
+
+# panelrate
+
+Regression analysis of **panel count data**: recurrent events observed only at
+intermittent examination times, so that you know how many events happened
+between visits but not when. `panelrate` fits the semiparametric proportional
+rate model
+
+$$E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t),$$
+
+allowing the covariates to vary over time, and implements the estimation and
+covariance methods of Sun, Guo, Li, Tu and Sun (2024),
+[*Bernoulli* **30**(4), 3251--3275](https://doi.org/10.3150/23-BEJ1713).
+
+## Why the rate model
+
+With time-varying covariates the competing proportional *means* model
+$E[N(t) \mid X(t)] = \mu(t)\exp(\beta'X(t))$ requires $\mu$ to be
+non-decreasing, which is awkward to guarantee when covariate values fluctuate,
+and its predicted mean curves need not be monotone. The rate model only needs
+the right hand side to be positive, so predicted means are non-decreasing by
+construction, and $\exp(\beta'X(t))$ reads as an instantaneous relative risk in
+the same way a hazard ratio does in survival analysis.
+
+## Installation
+
+```r
+# install.packages("remotes")
+remotes::install_github("commintern/panelrate")
+```
+
+## Usage
+
+Data go in counting process form, one row per interval over which the
+covariates are constant. A row whose `count` is a number records an examination
+at `tstop`; a row whose `count` is `NA` records only that a covariate changed.
+
+```{r example}
+library(panelrate)
+set.seed(1)
+
+d <- r_panel_count(150, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+head(d)
+
+fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+summary(fit)
+```
+
+If covariates are time-invariant, one row per examination is enough and the
+three argument form fills in the interval starts:
+
+```r
+panelrate(PanelCount(id, time, count) ~ x1 + x2, data = visits)
+```
+
+## Choosing a covariance estimator
+
+Estimation maximises the likelihood a Poisson process would give, but that
+assumption is only a working device. Three covariance estimators are available:
+
+| `vcov(fit, type =)` | What it is | Needs the Poisson assumption? |
+|---|---|---|
+| `"robust"` (default) | sandwich $\Omega^{-1} S \Omega^{-1}/n$ | no |
+| `"information"` | efficient information $S^{-1}/n$ | yes |
+| `"profile"` | Murphy--van der Vaart profile likelihood | yes |
+
+When counts are overdispersed relative to Poisson, which is the usual situation,
+the last two understate the standard errors, sometimes by a factor of five or
+more. The robust estimator costs nothing extra beyond quantities the EM
+algorithm has already produced.
+
+```{r overdispersion}
+set.seed(2)
+od <- r_panel_count(150, frailty = 1)   # gamma frailty: not a Poisson process
+odfit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = od)
+rbind(robust      = sqrt(diag(vcov(odfit, "robust"))),
+      information = sqrt(diag(vcov(odfit, "information"))))
+```
+
+## The baseline and predictions
+
+```{r baseline, fig.height = 4, fig.width = 6}
+head(baseline(fit))
+plot(fit)
+
+head(predict(fit, d, type = "mean"))
+```
+
+## Citation
+
+```r
+citation("panelrate")
+```

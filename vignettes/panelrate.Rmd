@@ -1,0 +1,245 @@
+---
+title: "Regression analysis of panel count data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Regression analysis of panel count data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6,
+                      fig.height = 4)
+```
+
+```{r setup}
+library(panelrate)
+```
+
+## The data and the model
+
+Panel count data arise when a recurrent event process is followed by periodic
+examinations. At each visit you learn how many events have happened since the
+last visit, but not when any of them happened. Hospitalisations counted at
+quarterly clinic visits, tumours counted at scheduled sacrifices, and insurance
+claims tallied at renewal all have this shape.
+
+Write $N_i(t)$ for the number of events subject $i$ has experienced by time $t$,
+observed at times $T_{i1} < \dots < T_{iJ_i}$, and $\Delta N_{ij}$ for the count
+in $(T_{i,j-1}, T_{ij}]$. `panelrate` fits the proportional rate model
+
+$$E[dN(t) \mid X(t)] = \exp(\beta' X(t)) \, d\Lambda(t),$$
+
+where $\Lambda$ is an unspecified non-decreasing baseline cumulative rate and
+$X(t)$ may vary over time.
+
+It is worth being clear about why the rate model rather than the proportional
+*means* model $E[N(t) \mid X(t)] = \mu(t)\exp(\beta'X(t))$. The means model
+requires $\mu$ to be non-decreasing, and when covariates fluctuate over time
+that is hard to arrange and harder to interpret: nothing stops a fitted means
+model from predicting a mean count that goes down. The rate model constrains
+only $\exp(\beta'X(t))\,d\Lambda(t)$ to be positive, so predicted means increase
+automatically, and $\exp(\beta'X(t))$ carries the same instantaneous
+relative-risk reading that a hazard ratio has in survival analysis.
+
+## Getting data into shape
+
+The response is built by `PanelCount()`, which plays the role `Surv()` plays in
+survival analysis and, like it, has two forms.
+
+When covariates do not change over time, one row per examination is enough:
+
+```{r three-arg}
+visits <- data.frame(
+  id    = c(1, 1, 1, 2, 2),
+  time  = c(0.5, 1.1, 1.9, 0.7, 1.4),
+  count = c(2, 0, 3, 1, 4),
+  dose  = c(10, 10, 10, 25, 25)
+)
+PanelCount(visits$id, visits$time, visits$count)
+```
+
+Interval starts are filled in from the previous examination of the same subject,
+with follow-up beginning at zero.
+
+When covariates *do* change over time you need the counting process form, one
+row per interval over which the covariates are constant. This is the same layout
+`coxph()` uses for time-dependent covariates. A row whose `count` is a number
+records an examination at `tstop`; a row whose `count` is `NA` records only that
+a covariate changed there.
+
+```{r four-arg}
+cp <- data.frame(
+  id     = c(1, 1, 1, 2),
+  tstart = c(0.0, 0.5, 0.9, 0.0),
+  tstop  = c(0.5, 0.9, 1.2, 0.8),
+  count  = c(2, NA, 0, 3),
+  dose   = c(10, 10, 25, 25)
+)
+PanelCount(cp$id, cp$tstart, cp$tstop, cp$count)
+```
+
+Subject 1 was examined at 0.5 and 1.2 with two events in the first interval and
+none in the second; the dose changed at 0.9, part way through the second
+interval, which is exactly the information the rate model can use and the means
+model cannot.
+
+Within a subject the intervals must be contiguous, start at zero, and end at an
+examination. `panelrate()` checks all of this and says which subject is at fault
+when it fails.
+
+### Converting data held in the older layout
+
+A common alternative layout repeats each panel count on every row of its
+interval and marks the examinations with a separate indicator. Turning that into
+the layout above takes one line, because a repeated count on a non-examination
+row carries no information that the count on the examination row does not:
+
+```{r convert, eval = FALSE}
+new <- old
+new$count[old$event == 0] <- NA
+panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = new)
+```
+
+## Fitting
+
+```{r fit}
+set.seed(1)
+d <- r_panel_count(200, beta = c(1, -1), lambda = function(t) 8 / (1 + t))
+fit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d)
+summary(fit)
+```
+
+There is no intercept: a constant in $X$ would be indistinguishable from a
+rescaling of $\Lambda$, so `panelrate()` drops it and reports the baseline
+separately.
+
+Fitting maximises the likelihood implied by a nonhomogeneous Poisson process,
+using an EM algorithm that treats the unobserved per-time counts as missing
+data. That makes the awkward integral
+$\int \exp(\beta'X(t)) d\Lambda(t)$ tractable and, usefully, means the
+covariates are only ever needed at the observed examination times rather than as
+complete trajectories.
+
+The Poisson likelihood is a working device, not an assumption about the data.
+The estimator stays consistent and asymptotically normal when the counts are not
+Poisson at all.
+
+## Which standard errors
+
+That distinction matters most for the covariance. Three estimators are
+available.
+
+```{r variance}
+se <- function(type) sqrt(diag(vcov(fit, type)))
+rbind(robust = se("robust"), information = se("information"))
+```
+
+`"robust"`, the default, is the sandwich $\Omega^{-1} S \Omega^{-1}/n$ built from
+the two matrices
+
+```{r matrices}
+fit$Omega
+fit$S
+```
+
+both of which are by-products of the last EM iteration, so the robust standard
+errors are essentially free. It is consistent whether or not the counts are
+Poisson.
+
+`"information"` is $S^{-1}/n$. Under the Poisson assumption $S$ is the efficient
+information and this is the right answer; it is also a cheap stand-in for the
+profile likelihood method, which it agrees with closely.
+
+`"profile"` is the numerical profile likelihood estimator of Murphy and van der
+Vaart. It is included for comparison with the literature, and because it is
+expensive it is computed only on request:
+
+```{r profile}
+pfit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = d,
+                  profile = TRUE)
+rbind(information = sqrt(diag(vcov(pfit, "information"))),
+      profile     = sqrt(diag(vcov(pfit, "profile"))))
+```
+
+The two track each other closely, as the theory says they should, since both
+estimate $S$. They are not identical: the profile version rests on a numerical
+derivative with a step of order $n^{-1/2}$, so it carries a discretisation error
+that shrinks only as the sample grows. That is the practical argument for
+preferring `"information"` whenever the Poisson assumption is tenable, and it is
+why `"profile"` is here mainly so that results can be compared with the
+literature.
+
+### What happens when the Poisson assumption fails
+
+Real recurrent event data are usually overdispersed: some subjects are simply
+more event-prone than their covariates suggest. Simulating that with a gamma
+frailty leaves the rate model intact but destroys the Poisson structure.
+
+```{r overdispersed}
+set.seed(2)
+od <- r_panel_count(200, beta = c(1, -1), frailty = 1)
+odfit <- panelrate(PanelCount(id, tstart, tstop, count) ~ x1 + x2, data = od)
+rbind(robust = sqrt(diag(vcov(odfit, "robust"))),
+      information = sqrt(diag(vcov(odfit, "information"))))
+```
+
+The information-based standard errors are several times too small. The
+simulations in the paper put the resulting coverage of nominal 95% intervals
+around 15--22%. This is the reason `"robust"` is the default, and the reason to
+think hard before reporting anything else.
+
+## The baseline and predicted means
+
+`baseline()` returns the estimated jumps and the cumulative baseline rate.
+
+```{r baseline}
+head(baseline(fit))
+plot(fit)
+lines(fit$baseline$time, 8 * log(1 + fit$baseline$time), col = 2, lty = 2)
+```
+
+The dashed line is the truth, $\Lambda(t) = 8\log(1+t)$.
+
+Predicted mean counts follow each subject's covariate trajectory,
+$E[N(t) \mid X] = \int_0^t \exp(\beta'X(s)) \, d\hat\Lambda(s)$:
+
+```{r predict}
+pred <- predict(fit, d, type = "mean")
+head(pred)
+
+one <- pred[pred$id == 1, ]
+plot(one$time, one$mean, type = "s", xlab = "Time",
+     ylab = "Predicted mean count", main = "Subject 1")
+```
+
+The curve is non-decreasing even though `x1` steps up or down part way through
+follow-up, which is the structural advantage of the rate model.
+
+## Computation
+
+The EM algorithm converges linearly and, on this problem, slowly: plain EM can
+still be moving in the fifth decimal place after tens of thousands of passes.
+`panelrate()` therefore extrapolates the iterations using the SQUAREM scheme of
+Varadhan and Roland, keeping an extrapolated point only when a stabilising EM
+pass from it does at least as well on the observed data log likelihood. The
+fixed point is unchanged; only the number of passes needed to reach it falls,
+typically by an order of magnitude.
+
+```{r passes}
+c(iterations = fit$iterations, EM_passes = fit$passes,
+  converged = fit$converged)
+```
+
+Set `accelerate = FALSE` in `panelrate_control()` to recover plain EM.
+
+The dominant cost is the size of the pooled grid of distinct examination times,
+because the covariate trajectory of every subject has to be evaluated at every
+grid time within their follow-up. Examination times that tie across subjects,
+which is what scheduled visits produce in practice, keep that grid small.
+
+## Reference
+
+Sun, D., Guo, Y., Li, Y., Tu, W. and Sun, J. (2024). A robust approach for
+regression analysis of panel count data. *Bernoulli* **30**(4), 3251--3275.
+[doi:10.3150/23-BEJ1713](https://doi.org/10.3150/23-BEJ1713)

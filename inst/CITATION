@@ -1,0 +1,17 @@
+citHeader("To cite panelrate in publications, please cite the paper that the package implements:")
+
+bibentry(
+  bibtype  = "Article",
+  title    = "A robust approach for regression analysis of panel count data",
+  author   = c(person("Dayu", "Sun"),
+               person("Yuanyuan", "Guo"),
+               person("Yang", "Li"),
+               person("Wanzhu", "Tu"),
+               person("Jianguo", "Sun")),
+  journal  = "Bernoulli",
+  year     = "2024",
+  volume   = "30",
+  number   = "4",
+  pages    = "3251--3275",
+  doi      = "10.3150/23-BEJ1713"
+)

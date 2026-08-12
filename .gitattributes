@@ -1,0 +1,5 @@
+# Keep LF in the repository.  R CMD check reports CRLF line endings in C/C++
+# sources, and the package is built and checked on Linux as well as Windows.
+* text=auto eol=lf
+*.png binary
+*.tar.gz binary

@@ -1,0 +1,31 @@
+Package: panelrate
+Type: Package
+Title: Robust Semiparametric Rate Regression for Panel Count Data
+Version: 0.1.0
+Authors@R: person("Dayu", "Sun", email = "dayusun@iu.edu",
+                  role = c("aut", "cre"))
+Description: Fits the semiparametric proportional rate model for panel count
+    data, that is, for recurrent event processes observed only at intermittent
+    examination times, allowing covariates to be time-varying. Estimation uses
+    a nonparametric maximum likelihood approach implemented through an
+    expectation-maximization algorithm under a working Poisson assumption, while
+    inference does not require that assumption to hold. Two computationally
+    inexpensive covariance estimators are provided: a robust sandwich estimator
+    that remains consistent when the Poisson assumption fails, and an efficient
+    information estimator that is a fast substitute for profile likelihood when
+    it holds. The profile likelihood estimator is also available for comparison.
+    Methods are described in Sun, Guo, Li, Tu and Sun (2024)
+    <doi:10.3150/23-BEJ1713>.
+License: GPL-3
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: Rcpp, stats, graphics
+LinkingTo: Rcpp, RcppArmadillo
+Suggests: testthat (>= 3.0.0), knitr, rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 7.3.3
+Roxygen: list(markdown = TRUE)
+URL: https://github.com/commintern/panelrate
+BugReports: https://github.com/commintern/panelrate/issues
+Config/testthat/edition: 3
+NeedsCompilation: yes
