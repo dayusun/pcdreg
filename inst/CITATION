@@ -1,4 +1,7 @@
-citHeader("To cite pcdreg in publications, please cite the paper that the package implements:")
+citHeader(
+  "To cite pcdreg, cite the paper for the method and the package for the ",
+  "software you ran. The paper is the more important of the two."
+)
 
 bibentry(
   bibtype  = "Article",
@@ -14,4 +17,13 @@ bibentry(
   number   = "4",
   pages    = "3251--3275",
   doi      = "10.3150/23-BEJ1713"
+)
+
+bibentry(
+  bibtype  = "Manual",
+  title    = "{pcdreg}: Semiparametric Regression for Panel Count Data",
+  author   = person("Dayu", "Sun"),
+  year     = "2026",
+  note     = paste("R package version", meta$Version),
+  url      = "https://github.com/dayusun/pcdreg"
 )
