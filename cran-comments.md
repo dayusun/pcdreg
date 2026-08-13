@@ -17,6 +17,13 @@ flags (the package's own `src/Makevars` passes only
 Makevars" passes), and the optional V8 package needed to check math rendering in
 the HTML manual is not installed there.
 
+## On the Hu, Sun and Wei DOI
+
+<https://doi.org/10.1111/1467-9469.00316> returns 403 to automated requests.
+The DOI is correct and resolves in a browser; the 403 comes from the
+publisher's bot protection, and is returned even to a request carrying an
+ordinary browser user agent. The other DOI and both package URLs return 200.
+
 ## Notes for the reviewer
 
 This is a new submission. It implements two established procedures for panel
