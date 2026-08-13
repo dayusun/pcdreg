@@ -39,6 +39,11 @@ count data, both cited in the DESCRIPTION and in `inst/CITATION`:
 
 The package compiles against RcppArmadillo and does not use OpenMP.
 
+One vignette compares pcdreg with spef, which is currently archived. spef is
+not a dependency and is not in Suggests, and the code that calls it is not
+evaluated, so nothing in the package requires spef to be installable. The
+recorded timings are embedded as data and the machine and versions are stated.
+
 The examples run on data simulated by `sim_pcd()`. No dataset is shipped: the
 data behind the published application is governed by a data use agreement and
 is not ours to redistribute.
