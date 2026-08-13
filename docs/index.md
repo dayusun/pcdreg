@@ -132,7 +132,9 @@ head(baseline(fit))
 autoplot(fit)
 ```
 
-![](reference/figures/baseline-1.png)
+![Estimated cumulative baseline rate as a step function rising steeply
+early in follow-up and flattening as time
+increases.](reference/figures/baseline-1.png)
 
 ``` r
 

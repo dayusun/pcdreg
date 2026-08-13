@@ -12,3 +12,5 @@
 ^docs$
 ^pkgdown$
 ^hpc$
+\.stackdump$
+^\.agents$

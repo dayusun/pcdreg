@@ -73,5 +73,5 @@ articles:
   navbar: ~
   contents:
   - pcdreg
-  - data-preparation
   - comparison
+  - data-preparation
