@@ -3,7 +3,7 @@
 * Windows 11, R 4.5.1 (local), Rtools45
 * Ubuntu 24.04, R 4.5.1 (Docker, rocker/r-ver:4.5.1)
 * macOS 26.6, arm64 (Apple M1), R 4.6.1, clang 17 (macbuilder): Status OK
-* win-builder, R-devel (2026-08-10 r90389) and R-release (4.6.1)
+* win-builder, R-devel (2026-10-24 r90762 ucrt) and R-release (4.6.1)
 
 ## R CMD check results
 
@@ -11,6 +11,10 @@
 
 The note is the usual "New submission". The macOS builder reports Status OK
 with no notes, since it does not run the incoming feasibility check.
+
+On win-builder the same note also lists "Guo" and "Hu" in the DESCRIPTION as
+possibly misspelled. Both are author surnames in the cited references and are
+spelled correctly.
 
 Two further notes appear only in the Linux container used for testing and are
 properties of that environment rather than of the package: the Debian build of R
