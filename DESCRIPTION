@@ -2,9 +2,19 @@ Package: pcdreg
 Type: Package
 Title: Semiparametric Regression for Panel Count Data
 Version: 0.1.0
-Authors@R: person("Dayu", "Sun", email = "dayusun@iu.edu",
-                  role = c("aut", "cre"),
-                  comment = c(ORCID = "0000-0002-7149-3303"))
+Authors@R: c(
+    person("Dayu", "Sun", email = "dayusun@iu.edu",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-7149-3303")),
+    person("Yuanyuan", "Guo", role = "ctb",
+           comment = "co-author of the method paper"),
+    person("Yang", "Li", role = "ctb",
+           comment = "co-author of the method paper"),
+    person("Wanzhu", "Tu", role = "ctb",
+           comment = "co-author of the method paper"),
+    person("Jianguo", "Sun", role = "ctb",
+           comment = "co-author of the method paper")
+  )
 Description: Fits semiparametric regression models to panel count data, that
     is, to recurrent event processes observed only at intermittent examination
     times, allowing covariates to be time-varying. The proportional rate model
