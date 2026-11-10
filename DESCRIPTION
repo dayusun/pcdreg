@@ -1,7 +1,7 @@
 Package: pcdreg
 Type: Package
 Title: Semiparametric Regression for Panel Count Data
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: c(
     person("Dayu", "Sun", email = "dayusun@iu.edu",
            role = c("aut", "cre"),

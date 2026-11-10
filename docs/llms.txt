@@ -36,6 +36,14 @@ risk in the same way a hazard ratio does in survival analysis.
 
 ## Installation
 
+Install the released version from CRAN:
+
+``` r
+install.packages("pcdreg")
+```
+
+or the development version from GitHub:
+
 ``` r
 # install.packages("remotes")
 remotes::install_github("dayusun/pcdreg")

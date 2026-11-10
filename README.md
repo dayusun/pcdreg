@@ -1,6 +1,12 @@
 
 # pcdreg
 
+<!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/pcdreg)](https://CRAN.R-project.org/package=pcdreg)
+<!-- badges: end -->
+
 Regression analysis of **panel count data**: recurrent events observed
 only at intermittent examination times, so that you know how many events
 happened between visits but not when. `pcdreg` fits the two
@@ -35,6 +41,14 @@ instantaneous relative risk in the same way a hazard ratio does in
 survival analysis.
 
 ## Installation
+
+Install the released version from CRAN:
+
+``` r
+install.packages("pcdreg")
+```
+
+or the development version from GitHub:
 
 ``` r
 # install.packages("remotes")

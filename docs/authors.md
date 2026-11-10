@@ -5,6 +5,18 @@
 - **Dayu Sun**. Author, maintainer.
   [](https://orcid.org/0000-0002-7149-3303)
 
+- **Yuanyuan Guo**. Contributor.  
+  co-author of the method paper
+
+- **Yang Li**. Contributor.  
+  co-author of the method paper
+
+- **Wanzhu Tu**. Contributor.  
+  co-author of the method paper
+
+- **Jianguo Sun**. Contributor.  
+  co-author of the method paper
+
 ## Citation
 
 Source:
@@ -26,12 +38,12 @@ regression analysis of panel count data.” *Bernoulli*, **30**(4),
     }
 
 Sun D (2026). *pcdreg: Semiparametric Regression for Panel Count Data*.
-R package version 0.1.0, <https://github.com/dayusun/pcdreg>.
+R package version 0.1.0.9000, <https://github.com/dayusun/pcdreg>.
 
     @Manual{,
       title = {{pcdreg}: Semiparametric Regression for Panel Count Data},
       author = {Dayu Sun},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 0.1.0.9000},
       url = {https://github.com/dayusun/pcdreg},
     }
